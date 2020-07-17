@@ -69,6 +69,8 @@ A common annoyance with Go errors which most people are aware of is, figuring ou
 
 ## How to use?
 
+Before that, over the years I have tried error with stack trace, annotation, custom error package with error codes etc. Finally, I think this package gives the best of all worlds, for most generic usecases.
+
 A sample was already shown in the user friendly message section, following one would show 1-2 scenarios.
 
 ```golang
