@@ -41,7 +41,7 @@ const (
 	TypeDownstreamDependencyTimedout
 
 	// DefaultMessage is the default user friendly message
-	DefaultMessage = "unknown error occured"
+	DefaultMessage = "unknown error occurred"
 )
 
 var (

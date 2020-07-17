@@ -72,53 +72,58 @@ A common annoyance with Go errors which most people are aware of is, figuring ou
 A sample was already shown in the user friendly message section, following one would show 1-2 scenarios.
 
 ```golang
-import (
-    "fmt"
-    "log"
+package main
 
-    "github.com/bnkamalesh/webgo/v4"
-    "github.com/bnkamalesh/errors"
+import (
+	"fmt"
+	"log"
+	"net/http"
+	"time"
+
+	"github.com/bnkamalesh/errors"
+	"github.com/bnkamalesh/webgo/v4"
+	"github.com/bnkamalesh/webgo/v4/middleware"
 )
 
 func bar() error {
-    return fmt.Errorf("%s %s", "sinking", "bar")
+	return fmt.Errorf("%s %s", "sinking", "bar")
 }
 
 func bar2() error {
-    err := bar()
-    if err != nil {
-        return errors.InternalErr(err, "bar2 was deceived by bar1 :(")
-    }
-    return nil
+	err := bar()
+	if err != nil {
+		return errors.InternalErr(err, "bar2 was deceived by bar1 :(")
+	}
+	return nil
 }
 
 func foo() error {
-    err := bar2()
-    if err != nil {
-        return errors.InternalErr(err, "we lost bar2!")
-    }
-    return nil
+	err := bar2()
+	if err != nil {
+		return errors.InternalErr(err, "we lost bar2!")
+	}
+	return nil
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-    err := foo()
-    if err != nil {
-        // log the error on your server for troubleshooting
-        log.Println(err.Error())
-        // respond to request with friendly msg
-        status, msg, _ := errors.HTTPStatusCodeMessage(err)
-        webgo.SendError(w, msg, status)
-        return
-    }
+	err := foo()
+	if err != nil {
+		// log the error on your server for troubleshooting
+		log.Println(err.Error())
+		// respond to request with friendly msg
+		status, msg, _ := errors.HTTPStatusCodeMessage(err)
+		webgo.SendError(w, msg, status)
+		return
+	}
 
-    webgo.R200(w, "yay!")
+	webgo.R200(w, "yay!")
 }
 
 func routes() []*webgo.Route {
 	return []*webgo.Route{
-		&webo.Route{
-			Name: "home",
-			Method: http.http.MethodGet,
+		&webgo.Route{
+			Name:    "home",
+			Method:  http.MethodGet,
 			Pattern: "/",
 			Handlers: []http.HandlerFunc{
 				handler,
@@ -128,7 +133,7 @@ func routes() []*webgo.Route {
 }
 
 func main() {
-	router := webgo.NewRouter(*webgo.Config{
+	router := webgo.NewRouter(&webgo.Config{
 		Host:         "",
 		Port:         "8080",
 		ReadTimeout:  15 * time.Second,
@@ -139,12 +144,17 @@ func main() {
 	router.Use(middleware.AccessLog)
 	router.Start()
 }
+
 ```
 
-[webgo](https://github.com/bnkamalesh/webgo) was used to illustrate a very specific function, `errors.HTTPStatusCodeMessage`. This just returns the appropriate http status code, user friendly message stored within and a boolean value. Boolean value is `true` if the returned error is of this package's error type.
-Since we get the status code and message separately, when using any web framework, you can set values according to the respective framework's native functions. In case of Webgo, it wraps errors in a struct of its own. 
+[webgo](https://github.com/bnkamalesh/webgo) was used to illustrate the usage of the function, `errors.HTTPStatusCodeMessage`. It returns the appropriate http status code, user friendly message stored within, and a boolean value. Boolean value is `true` if the returned error is of this package's error type.
+Since we get the status code and message separately, when using any web framework, you can set values according to the respective framework's native functions. In case of Webgo, it wraps errors in a struct of its own. Otherwise, you could directly respond to the HTTP request by calling `errors.WriteHTTP(error,http.ResponseWriter)`. 
 
-Otherwise, you could directly respond to the HTTP request by calling `WriteHTTP(error,http.ResponseWriter)`.
+Once the app is running, you can check the response by opening `http://localhost:8080` on your browser. Or on terminal
+```bash
+$ curl http://localhost:8080
+{"errors":"we lost bar2!. bar2 was deceived by bar1 :(","status":500} // output/response
+```
 
 ## Contributing
 
