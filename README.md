@@ -1,6 +1,6 @@
 <p align="center"><img src="https://user-images.githubusercontent.com/1092882/87815217-d864a680-c882-11ea-9c94-24b67f7125fe.png" alt="errors gopher" width="256px"/></p>
 
-[![](https://godoc.org/github.com/nathany/looper?status.svg)](http://godoc.org/github.com/bnkamalesh/errors)
+[![](https://godoc.org/github.com/nathany/looper?status.svg)](https://pkg.go.dev/github.com/bnkamalesh/errors?tab=doc)
 [![Maintainability](https://api.codeclimate.com/v1/badges/a86629ab167695d4db7f/maintainability)](https://codeclimate.com/github/bnkamalesh/errors)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bnkamalesh/errors)](https://goreportcard.com/report/github.com/bnkamalesh/errors)
 [![Build Status](https://travis-ci.org/bnkamalesh/errors.svg?branch=master)](https://travis-ci.org/bnkamalesh/errors)
