@@ -91,7 +91,7 @@ func DownstreamDependencyTimedout(message string) *Error {
 // InternalErr helper method for creation internal errors which also accepts an original error
 func InternalErr(original error, message string) *Error {
 	_, file, line, _ := runtime.Caller(1)
-	return newerr(original, message, file, line, TypeValidation)
+	return newerr(original, message, file, line, TypeInternal)
 }
 
 // ValidationErr helper method for creation validation errors which also accepts an original error
@@ -162,7 +162,7 @@ func HTTPStatusCodeMessage(err error) (int, string, bool) {
 		return derr.HTTPStatusCode(), derr.Message(), true
 	}
 
-	return http.StatusInternalServerError, derr.Error(), false
+	return http.StatusInternalServerError, err.Error(), false
 }
 
 // WriteHTTP is a convenience method which will check if the error is of type *Error and

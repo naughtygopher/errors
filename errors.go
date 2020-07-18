@@ -102,6 +102,10 @@ func (e *Error) Message() string {
 func (e *Error) HTTPStatusCode() int {
 	status := http.StatusInternalServerError
 	switch e.eType {
+	case TypeValidation:
+		{
+			status = http.StatusUnprocessableEntity
+		}
 	case TypeInputBody:
 		{
 			status = http.StatusBadRequest
