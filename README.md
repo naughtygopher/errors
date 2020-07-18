@@ -13,6 +13,7 @@ Errors package is a drop-in replacement of the built-in Go errors package with n
 1. Multiple (11) error types
 2. User friendly message
 3. File & line number prefixed to errors
+4. HTTP status code and user friendly message (wrapped messages are concatenated) for all error types
 
 In case of nested errors, the messages (in case of nesting with this package's error) & errors are also looped through.
 
@@ -74,6 +75,11 @@ func main() {
 ### File & line number prefixed to errors
 
 A common annoyance with Go errors which most people are aware of is, figuring out the origin of the error, especially when there are nested function calls. Ever since error annotation was introduced in Go, a lot of people have tried using it to trace out an errors origin by giving function names, contextual message etc in it. e.g. `fmt.Errorf("database query returned error %w", err)`. This errors package, whenever you call the Go error interface's `Error() string` function, it'll print the error prefixed by the filepath and line number. It'd look like `../Users/JohnDoe/apps/main.go:50 hello world` where 'hello world' is the error message.
+
+### HTTP status code & message
+
+The function `errors.HTTPStatusCodeMessage(error) (int, string, bool)` returns the HTTP status code, message, and a boolean value. The boolean if true, means the error is of type *Error from this package. 
+If error is nested with multiple errors, it loops through all the levels and returns a single concatenated message. This is illustrated in the 'How to use?' section
 
 ## How to use?
 
@@ -169,10 +175,31 @@ And output of the `fmt.Println(err.Error())`
 ```bash
 /Users/username/go/src/errorscheck/main.go:28 /Users/username/go/src/errorscheck/main.go:20 sinking bar
 ```
+## Benchmark
+
+Benchmark run on:
+<p><img width="320" alt="Screenshot 2020-07-18 at 6 25 22 PM" src="https://user-images.githubusercontent.com/1092882/87852981-241b5c80-c924-11ea-9d22-296acdead7cc.png"></p>
+
+Results
+```bash
+$ go version
+go version go1.14.4 darwin/amd64
+$ go test -bench=.
+goos: darwin
+goarch: amd64
+pkg: github.com/bnkamalesh/errors
+Benchmark_Internal-8                                     1880440               635 ns/op
+Benchmark_InternalErr-8                                  1607589               746 ns/op
+Benchmark_InternalGetError-8                             1680831               711 ns/op
+Benchmark_InternalGetErrorWithNestedError-8              1462900               823 ns/op
+Benchmark_InternalGetMessage-8                           1859172               646 ns/op
+Benchmark_InternalGetMessageWithNestedError-8            1649259               726 ns/op
+Benchmark_HTTPStatusCodeMessage-8                       23497728                50.3 ns/op
+```
 
 ## Contributing
 
-If more error types, customization etc. are required, PRs & issues are welcome!
+More error types, customization etc; PRs & issues are welcome!
 
 ## The gopher
 

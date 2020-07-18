@@ -2,7 +2,6 @@
 package errors
 
 import (
-	"fmt"
 	"net/http"
 	"runtime"
 	"strings"
@@ -62,7 +61,8 @@ type Error struct {
 // Error is the implementation of error interface
 func (e *Error) Error() string {
 	if e.original != nil {
-		return fmt.Sprintf("%s %s", e.fileLine, e.original.Error())
+		// string concatenation with + is ~100x faster than fmt.Sprintf()
+		return e.fileLine + " " + e.original.Error()
 		/*
 			// use the following code instead of the above return, to avoid nested filename:line
 			err, _ := e.original.(*Error)
@@ -74,10 +74,12 @@ func (e *Error) Error() string {
 	}
 
 	if e.message != "" {
-		return fmt.Sprintf("%s %s", e.fileLine, e.message)
+		// string concatenation with + is ~100x faster than fmt.Sprintf()
+		return e.fileLine + " " + e.message
 	}
 
-	return fmt.Sprintf("%s %s", e.fileLine, DefaultMessage)
+	// string concatenation with + is ~100x faster than fmt.Sprintf()
+	return e.fileLine + " " + DefaultMessage
 }
 
 // Message returns the user friendly message stored in the error struct
