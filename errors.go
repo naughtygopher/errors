@@ -98,6 +98,24 @@ func (e *Error) Message() string {
 	return e.message
 }
 
+// Unwrap implement's Go 1.13's Unwrap interface exposing the wrapped error
+func (e *Error) Unwrap() error {
+	if e.original == nil {
+		return nil
+	}
+
+	return e.original
+}
+
+// Is implements the Is interface required by Go
+func (e *Error) Is(err error) bool {
+	o, _ := err.(*Error)
+	if o == nil {
+		return false
+	}
+	return o == e
+}
+
 // HTTPStatusCode is a convenience method used to get the appropriate HTTP response status code for the respective error type
 func (e *Error) HTTPStatusCode() int {
 	status := http.StatusInternalServerError
