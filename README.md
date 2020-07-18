@@ -1,10 +1,10 @@
 <p align="center"><img src="https://user-images.githubusercontent.com/1092882/87815217-d864a680-c882-11ea-9c94-24b67f7125fe.png" alt="errors gopher" width="256px"/></p>
 
-[![](https://godoc.org/github.com/nathany/looper?status.svg)](https://pkg.go.dev/github.com/bnkamalesh/errors?tab=doc)
-[![Maintainability](https://api.codeclimate.com/v1/badges/a86629ab167695d4db7f/maintainability)](https://codeclimate.com/github/bnkamalesh/errors)
-[![Go Report Card](https://goreportcard.com/badge/github.com/bnkamalesh/errors)](https://goreportcard.com/report/github.com/bnkamalesh/errors)
 [![Build Status](https://travis-ci.org/bnkamalesh/errors.svg?branch=master)](https://travis-ci.org/bnkamalesh/errors)
 [![codecov](https://codecov.io/gh/bnkamalesh/errors/branch/master/graph/badge.svg)](https://codecov.io/gh/bnkamalesh/errors)
+[![Go Report Card](https://goreportcard.com/badge/github.com/bnkamalesh/errors)](https://goreportcard.com/report/github.com/bnkamalesh/errors)
+[![Maintainability](https://api.codeclimate.com/v1/badges/a86629ab167695d4db7f/maintainability)](https://codeclimate.com/github/bnkamalesh/errors)
+[![](https://godoc.org/github.com/nathany/looper?status.svg)](https://pkg.go.dev/github.com/bnkamalesh/errors?tab=doc)
 
 # Errors
 
@@ -15,6 +15,10 @@ Errors package is a drop-in replacement of the built-in Go errors package with n
 3. File & line number prefixed to errors
 
 In case of nested errors, the messages (in case of nesting with this package's error) & errors are also looped through.
+
+### Prerequisites
+
+Go 1.13+
 
 ### Custom error types
 
@@ -78,7 +82,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -111,7 +114,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	err := foo()
 	if err != nil {
 		// log the error on your server for troubleshooting
-		log.Println(err.Error())
+		fmt.Println(err.Error())
 		// respond to request with friendly msg
 		status, msg, _ := errors.HTTPStatusCodeMessage(err)
 		webgo.SendError(w, msg, status)
@@ -155,7 +158,12 @@ Since we get the status code and message separately, when using any web framewor
 Once the app is running, you can check the response by opening `http://localhost:8080` on your browser. Or on terminal
 ```bash
 $ curl http://localhost:8080
-{"errors":"we lost bar2!. bar2 was deceived by bar1 :(","status":500} // output/response
+{"errors":"we lost bar2!. bar2 was deceived by bar1 :(","status":500} // HTTP response
+```
+
+And output of the `fmt.Println(err.Error())`
+```bash
+/Users/username/go/src/errorscheck/main.go:28 /Users/username/go/src/errorscheck/main.go:20 sinking bar
 ```
 
 ## Contributing
