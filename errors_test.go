@@ -142,8 +142,7 @@ func TestError_Type(t *testing.T) {
 	}
 }
 
-// ignoreTestSetDefaultType if run, will fail other tests because New's type would be reset
-func ignoreTestSetDefaultType(t *testing.T) {
+func TestSetDefaultType(t *testing.T) {
 	type args struct {
 		message string
 		e       errType

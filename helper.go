@@ -28,6 +28,12 @@ func NewWithErrMsgType(e error, message string, etype errType) *Error {
 	return newerr(e, message, file, line, etype)
 }
 
+// Internal helper method for creation internal errors
+func Internal(message string) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerr(nil, message, file, line, TypeInternal)
+}
+
 // Validation is a helper function to create a new error of type TypeValidation
 func Validation(message string) *Error {
 	_, file, line, _ := runtime.Caller(1)

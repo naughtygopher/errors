@@ -101,7 +101,7 @@ func TestHelperFnsForAllTypes(t *testing.T) {
 		switch tt.args.eType {
 		case TypeInternal:
 			{
-				got = New(tt.args.message)
+				got = Internal(tt.args.message)
 				_, file, line, _ := runtime.Caller(0)
 				line--
 				want = newerr(nil, tt.args.message, file, line, TypeInternal)
@@ -482,7 +482,7 @@ func TestHTTPStatusCodeMessage(t *testing.T) {
 		{
 			name: "TypeInternal",
 			args: args{
-				err: New("unknown error occurred"),
+				err: Internal("unknown error occurred"),
 			},
 			want:  http.StatusInternalServerError,
 			want1: "unknown error occurred",
@@ -581,7 +581,7 @@ func TestHTTPStatusCodeMessage(t *testing.T) {
 		{
 			name: "TypeDownstreamDependencyTimedout",
 			args: args{
-				err: New("dependency timed out"),
+				err: DownstreamDependencyTimedout("dependency timed out"),
 			},
 			want:  http.StatusInternalServerError,
 			want1: "dependency timed out",
@@ -618,7 +618,7 @@ func TestWriteHTTP(t *testing.T) {
 		{
 			name: "TypeInternal",
 			args: args{
-				err: New("system error"),
+				err: Internal("system error"),
 				w:   httptest.NewRecorder(),
 			},
 			wantStatus:  http.StatusInternalServerError,

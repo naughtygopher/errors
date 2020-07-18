@@ -10,7 +10,7 @@
 
 Errors package is a drop-in replacement of the built-in Go errors package with no external dependencies. It lets you create errors of 11 different types which should handle most of the use cases. Some of them are a bit too specific for web applications, but useful nonetheless. Following are the primary features of this package:
 
-1. Custom error types
+1. Multiple (11) error types
 2. User friendly message
 3. File & line number prefixed to errors
 
@@ -20,7 +20,7 @@ In case of nested errors, the messages (in case of nesting with this package's e
 
 Go 1.13+
 
-### Custom error types
+### Available error types
 
 1. TypeInternal - is the error type for when there is an internal system error. e.g. Database errors
 2. TypeValidation - is the error type for when there is a validation error. e.g. invalid email address
@@ -33,6 +33,10 @@ Go 1.13+
 9. TypeMaximumAttempts - is the error type for attempting the same action more than an allowed threshold
 10. TypeSubscriptionExpired - is the error type for when a user's 'paid' account has expired
 11. TypeDownstreamDependencyTimedout - is the error type for when a request to a downstream dependent service times out
+
+Helper functions are available for all the error types. Each of them have 2 helper functions, one which accepts only a string, and the other which accepts an original error as well as a user friendly message.
+
+All the dedicated error type functions are documented [here](https://pkg.go.dev/github.com/bnkamalesh/errors?tab=doc#DownstreamDependencyTimedout). Names are consistent with the error type, e.g. errors.Internal(string) and errors.InternalErr(error, string)
 
 ### User friendly messages
 
