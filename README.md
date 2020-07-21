@@ -5,6 +5,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/bnkamalesh/errors)](https://goreportcard.com/report/github.com/bnkamalesh/errors)
 [![Maintainability](https://api.codeclimate.com/v1/badges/a86629ab167695d4db7f/maintainability)](https://codeclimate.com/github/bnkamalesh/errors)
 [![](https://godoc.org/github.com/nathany/looper?status.svg)](https://pkg.go.dev/github.com/bnkamalesh/errors?tab=doc)
+[![](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go#error-handling)
 
 # Errors
 
@@ -15,7 +16,7 @@ Errors package is a drop-in replacement of the built-in Go errors package with n
 3. File & line number prefixed to errors
 4. HTTP status code and user friendly message (wrapped messages are concatenated) for all error types
 
-In case of nested errors, the messages (in case of nesting with this package's error) & errors are also looped through.
+In case of nested errors, the messages (in case of nesting with this package's error) & errors are also looped through the full chain of errors.
 
 ### Prerequisites
 
@@ -78,7 +79,7 @@ A common annoyance with Go errors which most people are aware of is, figuring ou
 
 ### HTTP status code & message
 
-The function `errors.HTTPStatusCodeMessage(error) (int, string, bool)` returns the HTTP status code, message, and a boolean value. The boolean if true, means the error is of type *Error from this package. 
+The function `errors.HTTPStatusCodeMessage(error) (int, string, bool)` returns the HTTP status code, message, and a boolean value. The boolean is true, if the error is of type *Error from this package. 
 If error is nested with multiple errors, it loops through all the levels and returns a single concatenated message. This is illustrated in the 'How to use?' section
 
 ## How to use?
