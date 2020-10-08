@@ -2,6 +2,7 @@ package errors
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -639,6 +640,135 @@ func TestWriteHTTP(t *testing.T) {
 						tt.wantMessage,
 					)
 				}
+			}
+		})
+	}
+}
+
+func TestHasCheck(t *testing.T) {
+	type args struct {
+		err error
+		et  errType
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "has required type, nested",
+			args: args{
+				err: ValidationErr(
+					DuplicateErr(
+						Internal("hello world"),
+						DefaultMessage,
+					),
+					DefaultMessage,
+				),
+				et: TypeInternal,
+			},
+			want: true,
+		},
+		{
+			name: "has required type, not nested",
+			args: args{
+				err: Internal("hello world"),
+				et:  TypeInternal,
+			},
+			want: true,
+		},
+		{
+			name: "does not have required type",
+			args: args{
+				err: ValidationErr(
+					DuplicateErr(
+						Internal("hello world"),
+						DefaultMessage,
+					),
+					DefaultMessage,
+				),
+				et: TypeInputBody,
+			},
+			want: false,
+		},
+		{
+			name: "*Error wrapped in external error",
+			args: args{
+				err: fmt.Errorf("unknown error %w", Internal("internal error")),
+				et:  TypeInternal,
+			},
+			want: true,
+		},
+		{
+			name: "other error type",
+			args: args{
+				err: fmt.Errorf("external error"),
+				et:  TypeInputBody,
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := HasType(tt.args.err, tt.args.et); got != tt.want {
+				t.Errorf("HasType() = %v, want %v %s", got, tt.want, tt.args.err.Error())
+			}
+		})
+	}
+}
+
+func BenchmarkHasType(b *testing.B) {
+	err := ValidationErr(
+		DuplicateErr(
+			SubscriptionExpiredErr(
+				ValidationErr(
+					InputBodyErr(
+						Internal("hello world"),
+						DefaultMessage,
+					),
+					DefaultMessage,
+				),
+				DefaultMessage,
+			),
+			DefaultMessage,
+		),
+		DefaultMessage,
+	)
+	for i := 0; i < b.N; i++ {
+		if !HasType(err, TypeInternal) {
+			b.Fatal("TypeInternal not found")
+		}
+	}
+}
+
+func TestTypeInt(t *testing.T) {
+	type args struct {
+		err error
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{
+			name: "existing error type",
+			args: args{
+				err: Internal("internal error occurred"),
+			},
+			want: TypeInternal.Int(),
+		},
+		{
+			name: "non-existent error type",
+			args: args{
+				err: fmt.Errorf("unknown error type"),
+			},
+			want: -1,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := TypeInt(tt.args.err); got != tt.want {
+				t.Errorf("TypeInt() = %v, want %v", got, tt.want)
 			}
 		})
 	}

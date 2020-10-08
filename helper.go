@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"errors"
 	"net/http"
 	"runtime"
 	"strconv"
@@ -178,4 +179,36 @@ func WriteHTTP(err error, w http.ResponseWriter) {
 	status, msg, _ := HTTPStatusCodeMessage(err)
 	w.WriteHeader(status)
 	w.Write([]byte(msg))
+}
+
+// Type returns the errType if it's an instance of *Error, -1 otherwise
+func Type(err error) errType {
+	e, ok := err.(*Error)
+	if !ok {
+		return errType(-1)
+	}
+	return e.Type()
+}
+
+// Type returns the errType as integer if it's an instance of *Error, -1 otherwise
+func TypeInt(err error) int {
+	return Type(err).Int()
+}
+
+// HasType will check if the provided err type is available anywhere nested in the error
+func HasType(err error, et errType) bool {
+	if err == nil {
+		return false
+	}
+
+	e, _ := err.(*Error)
+	if e == nil {
+		return HasType(errors.Unwrap(err), et)
+	}
+
+	if e.Type() == et {
+		return true
+	}
+
+	return HasType(e.Unwrap(), et)
 }

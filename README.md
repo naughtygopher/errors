@@ -15,6 +15,8 @@ Errors package is a drop-in replacement of the built-in Go errors package with n
 2. User friendly message
 3. File & line number prefixed to errors
 4. HTTP status code and user friendly message (wrapped messages are concatenated) for all error types
+5. Helper functions to generate each error type
+6. Helper function to get error Type, error type as int, check if error type is wrapped anywhere in chain
 
 In case of nested errors, the messages (in case of nesting with this package's error) & errors are also looped through the full chain of errors.
 
@@ -176,6 +178,7 @@ And output of the `fmt.Println(err.Error())`
 ```bash
 /Users/username/go/src/errorscheck/main.go:28 /Users/username/go/src/errorscheck/main.go:20 sinking bar
 ```
+
 ## Benchmark
 
 Benchmark run on:
@@ -189,13 +192,16 @@ $ go test -bench=.
 goos: darwin
 goarch: amd64
 pkg: github.com/bnkamalesh/errors
-Benchmark_Internal-8                                     1880440               635 ns/op
-Benchmark_InternalErr-8                                  1607589               746 ns/op
-Benchmark_InternalGetError-8                             1680831               711 ns/op
-Benchmark_InternalGetErrorWithNestedError-8              1462900               823 ns/op
-Benchmark_InternalGetMessage-8                           1859172               646 ns/op
-Benchmark_InternalGetMessageWithNestedError-8            1649259               726 ns/op
-Benchmark_HTTPStatusCodeMessage-8                       23497728                50.3 ns/op
+Benchmark_Internal-8                            	 1874256	       639 ns/op	     368 B/op	       5 allocs/op
+Benchmark_InternalErr-8                         	 1612707	       755 ns/op	     368 B/op	       5 allocs/op
+Benchmark_InternalGetError-8                    	 1700966	       706 ns/op	     464 B/op	       6 allocs/op
+Benchmark_InternalGetErrorWithNestedError-8     	 1458368	       823 ns/op	     464 B/op	       6 allocs/op
+Benchmark_InternalGetMessage-8                  	 1866562	       643 ns/op	     368 B/op	       5 allocs/op
+Benchmark_InternalGetMessageWithNestedError-8   	 1656597	       770 ns/op	     400 B/op	       6 allocs/op
+Benchmark_HTTPStatusCodeMessage-8               	26003678	        46.1 ns/op	      16 B/op	       1 allocs/op
+BenchmarkHasType-8                              	84689433	        14.2 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	github.com/bnkamalesh/errors	14.478s
 ```
 
 ## Contributing

@@ -82,7 +82,8 @@ func (e *Error) Error() string {
 	return e.fileLine + " " + DefaultMessage
 }
 
-// Message returns the user friendly message stored in the error struct
+// Message returns the user friendly message stored in the error struct. It will ignore all errors
+// which are not of type *Error
 func (e *Error) Message() string {
 	messages := make([]string, 0, 5)
 	messages = append(messages, e.message)
