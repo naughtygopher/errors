@@ -17,6 +17,18 @@ func newerr(e error, message string, file string, line int, etype errType) *Erro
 	}
 }
 
+// Wrap is used to simply wrap an error with no custom error message with Error struct; with the error
+// type being defaulted to `TypeInternal`
+// If the error being wrapped is already of type Error, then its respective type is used
+func Wrap(err error) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	e, _ := err.(*Error)
+	if e == nil {
+		return newerr(err, "", file, line, TypeInternal)
+	}
+	return newerr(err, "", file, line, e.eType)
+}
+
 // NewWithType returns an error instance with custom error type
 func NewWithType(msg string, etype errType) *Error {
 	_, file, line, _ := runtime.Caller(1)

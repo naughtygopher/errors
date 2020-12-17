@@ -90,6 +90,9 @@ func (e *Error) Message() string {
 
 	err, _ := e.original.(*Error)
 	for err != nil {
+		if err.message == "" {
+			continue
+		}
 		messages = append(messages, err.message)
 		err, _ = err.original.(*Error)
 	}
