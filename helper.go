@@ -29,6 +29,16 @@ func Wrap(err error) *Error {
 	return newerr(err, "", file, line, e.eType)
 }
 
+// WrapWithMsg wrap error with a message
+func WrapWithMsg(err error, msg string) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	e, _ := err.(*Error)
+	if e == nil {
+		return newerr(err, msg, file, line, TypeInternal)
+	}
+	return newerr(err, msg, file, line, e.eType)
+}
+
 // NewWithType returns an error instance with custom error type
 func NewWithType(msg string, etype errType) *Error {
 	_, file, line, _ := runtime.Caller(1)
