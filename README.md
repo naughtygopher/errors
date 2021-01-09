@@ -18,7 +18,7 @@ Errors package is a drop-in replacement of the built-in Go errors package with n
 5. Helper functions to generate each error type
 6. Helper function to get error Type, error type as int, check if error type is wrapped anywhere in chain
 
-In case of nested errors, the messages (in case of nesting with this package's error) & errors are also looped through the full chain of errors.
+In case of nested errors, the messages & errors are also looped through the full chain of errors.
 
 ### Prerequisites
 
@@ -88,7 +88,7 @@ If error is nested with multiple errors, it loops through all the levels and ret
 
 Before that, over the years I have tried error with stack trace, annotation, custom error package with error codes etc. Finally, I think this package gives the best of all worlds, for most generic usecases.
 
-A sample was already shown in the user friendly message section, following one would show 1-2 scenarios.
+A sample was already shown in the user friendly message section, following one would show a few more scenarios.
 
 ```golang
 package main
@@ -165,16 +165,16 @@ func main() {
 
 ```
 
-[webgo](https://github.com/bnkamalesh/webgo) was used to illustrate the usage of the function, `errors.HTTPStatusCodeMessage`. It returns the appropriate http status code, user friendly message stored within, and a boolean value. Boolean value is `true` if the returned error is of this package's error type.
+[webgo](https://github.com/bnkamalesh/webgo) was used to illustrate the usage of the function, `errors.HTTPStatusCodeMessage`. It returns the appropriate http status code, user friendly message stored within, and a boolean value. Boolean value is `true` if the returned error of type *Error.
 Since we get the status code and message separately, when using any web framework, you can set values according to the respective framework's native functions. In case of Webgo, it wraps errors in a struct of its own. Otherwise, you could directly respond to the HTTP request by calling `errors.WriteHTTP(error,http.ResponseWriter)`. 
 
 Once the app is running, you can check the response by opening `http://localhost:8080` on your browser. Or on terminal
 ```bash
 $ curl http://localhost:8080
-{"errors":"we lost bar2!. bar2 was deceived by bar1 :(","status":500} // HTTP response
+{"errors":"we lost bar2!. bar2 was deceived by bar1 :(","status":500} // output
 ```
 
-And output of the `fmt.Println(err.Error())`
+And the `fmt.Println(err.Error())` generated output on stdout would be:
 ```bash
 /Users/username/go/src/errorscheck/main.go:28 /Users/username/go/src/errorscheck/main.go:20 sinking bar
 ```

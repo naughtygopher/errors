@@ -645,7 +645,7 @@ func TestWriteHTTP(t *testing.T) {
 	}
 }
 
-func TestHasCheck(t *testing.T) {
+func TestHasType(t *testing.T) {
 	type args struct {
 		err error
 		et  errType

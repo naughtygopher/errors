@@ -116,10 +116,7 @@ func (e *Error) Unwrap() error {
 // Is implements the Is interface required by Go
 func (e *Error) Is(err error) bool {
 	o, _ := err.(*Error)
-	if o == nil {
-		return false
-	}
-	return o == e
+	return o != nil && o == e
 }
 
 // HTTPStatusCode is a convenience method used to get the appropriate HTTP response status code for the respective error type

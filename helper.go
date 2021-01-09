@@ -12,7 +12,7 @@ func newerr(e error, message string, file string, line int, etype errType) *Erro
 		original: e,
 		message:  message,
 		eType:    etype,
-		// '+' concatenation is much faster than using fmt.Sprintf("%s:%d", file, line)
+		// '+' concatenation is ~100x faster than using fmt.Sprintf("%s:%d", file, line)
 		fileLine: file + ":" + strconv.Itoa(line),
 	}
 }
@@ -29,7 +29,7 @@ func Wrap(err error) *Error {
 	return newerr(err, "", file, line, e.eType)
 }
 
-// WrapWithMsg wrap error with a message
+// WrapWithMsg wrap error with a user friendly message
 func WrapWithMsg(err error, msg string) *Error {
 	_, file, line, _ := runtime.Caller(1)
 	e, _ := err.(*Error)
@@ -51,7 +51,7 @@ func NewWithErrMsgType(e error, message string, etype errType) *Error {
 	return newerr(e, message, file, line, etype)
 }
 
-// Internal helper method for creation internal errors
+// Internal helper method for creating internal errors
 func Internal(message string) *Error {
 	_, file, line, _ := runtime.Caller(1)
 	return newerr(nil, message, file, line, TypeInternal)
