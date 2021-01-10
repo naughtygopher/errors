@@ -86,18 +86,21 @@ func (e *Error) Error() string {
 // which are not of type *Error
 func (e *Error) Message() string {
 	messages := make([]string, 0, 5)
-	messages = append(messages, e.message)
+	if e.message != "" {
+		messages = append(messages, e.message)
+	}
 
 	err, _ := e.original.(*Error)
 	for err != nil {
 		if err.message == "" {
+			err, _ = err.original.(*Error)
 			continue
 		}
 		messages = append(messages, err.message)
 		err, _ = err.original.(*Error)
 	}
 
-	if len(messages) > 1 {
+	if len(messages) > 0 {
 		return strings.Join(messages, ". ")
 	}
 

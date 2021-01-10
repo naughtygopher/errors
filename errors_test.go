@@ -220,3 +220,71 @@ func Benchmark_HTTPStatusCodeMessage(b *testing.B) {
 		_, _, _ = HTTPStatusCodeMessage(err)
 	}
 }
+
+func TestError_Message(t *testing.T) {
+	type fields struct {
+		original error
+		message  string
+		eType    errType
+		fileLine string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "No nested error",
+			fields: fields{
+				original: nil,
+				message:  "hello friendly error msg",
+				eType:    TypeInternal,
+				fileLine: "errors.go:87",
+			},
+			want: "hello friendly error msg",
+		},
+		{
+			name: "Empty message",
+			fields: fields{
+				original: nil,
+				message:  "",
+				eType:    TypeInternal,
+				fileLine: "errors.go:87",
+			},
+			want: "",
+		},
+		{
+			name: "Nested error with message",
+			fields: fields{
+				original: &Error{
+					original: &Error{
+						message:  "",
+						eType:    TypeInputBody,
+						fileLine: "errors.go:87",
+					},
+					message:  "hello nested err message",
+					eType:    TypeInternal,
+					fileLine: "errors.go:87",
+				},
+				message:  "",
+				eType:    TypeInternal,
+				fileLine: "errors.go:87",
+			},
+			want: "hello nested err message",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := &Error{
+				original: tt.fields.original,
+				message:  tt.fields.message,
+				eType:    tt.fields.eType,
+				fileLine: tt.fields.fileLine,
+			}
+			if got := e.Message(); got != tt.want {
+				t.Errorf("Error.Message() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
