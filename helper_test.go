@@ -773,3 +773,59 @@ func TestTypeInt(t *testing.T) {
 		})
 	}
 }
+
+func Test_newerrf(t *testing.T) {
+	type args struct {
+		e      error
+		file   string
+		line   int
+		etype  errType
+		format string
+		args   []interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want *Error
+	}{
+		{
+			name: "with single placeholder",
+			args: args{
+				e:      nil,
+				etype:  TypeInternal,
+				file:   "f",
+				line:   1,
+				format: "'%d' got int placeholder",
+				args:   []interface{}{1},
+			},
+			want: &Error{
+				message:  "'1' got int placeholder",
+				eType:    TypeInternal,
+				fileLine: "f:1",
+			},
+		},
+		{
+			name: "with multiple placeholders",
+			args: args{
+				e:      nil,
+				etype:  TypeInternal,
+				file:   "f",
+				line:   1,
+				format: "'%d', '%s' got int & string placeholder",
+				args:   []interface{}{1, "uh-oh"},
+			},
+			want: &Error{
+				message:  "'1', 'uh-oh' got int & string placeholder",
+				eType:    TypeInternal,
+				fileLine: "f:1",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := newerrf(tt.args.e, tt.args.file, tt.args.line, tt.args.etype, tt.args.format, tt.args.args...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newerrf() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

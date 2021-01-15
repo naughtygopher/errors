@@ -2,9 +2,11 @@ package errors
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"runtime"
 	"strconv"
+	"strings"
 )
 
 func newerr(e error, message string, file string, line int, etype errType) *Error {
@@ -17,19 +19,34 @@ func newerr(e error, message string, file string, line int, etype errType) *Erro
 	}
 }
 
+func newerrf(e error, file string, line int, etype errType, format string, args ...interface{}) *Error {
+	message := fmt.Sprintf(format, args...)
+	return newerr(e, message, file, line, etype)
+}
+
 // Wrap is used to simply wrap an error with no custom error message with Error struct; with the error
 // type being defaulted to `TypeInternal`
 // If the error being wrapped is already of type Error, then its respective type is used
-func Wrap(err error) *Error {
+func Wrap(err error, msg ...string) *Error {
+	message := strings.Join(msg, ". ")
 	_, file, line, _ := runtime.Caller(1)
 	e, _ := err.(*Error)
 	if e == nil {
-		return newerr(err, "", file, line, TypeInternal)
+		return newerr(err, message, file, line, TypeInternal)
 	}
-	return newerr(err, "", file, line, e.eType)
+	return newerr(err, message, file, line, e.eType)
 }
 
-// WrapWithMsg wrap error with a user friendly message
+func Wrapf(err error, format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	e, _ := err.(*Error)
+	if e == nil {
+		return newerrf(e, file, line, TypeInternal, format, args...)
+	}
+	return newerrf(e, file, line, e.Type(), format, args...)
+}
+
+// WrapWithMsg [deprecated, use `Wrap`] wrap error with a user friendly message
 func WrapWithMsg(err error, msg string) *Error {
 	_, file, line, _ := runtime.Caller(1)
 	e, _ := err.(*Error)
@@ -45,10 +62,22 @@ func NewWithType(msg string, etype errType) *Error {
 	return newerr(nil, msg, file, line, etype)
 }
 
+// NewWithTypef returns an error instance with custom error type. And formatted message
+func NewWithTypef(etype errType, format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(nil, file, line, etype, format, args...)
+}
+
 // NewWithErrMsgType returns an error instance with custom error type and message
 func NewWithErrMsgType(e error, message string, etype errType) *Error {
 	_, file, line, _ := runtime.Caller(1)
 	return newerr(e, message, file, line, etype)
+}
+
+// NewWithErrMsgTypef returns an error instance with custom error type and formatted message
+func NewWithErrMsgTypef(e error, etype errType, format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(e, file, line, etype, format, args...)
 }
 
 // Internal helper method for creating internal errors
@@ -57,10 +86,22 @@ func Internal(message string) *Error {
 	return newerr(nil, message, file, line, TypeInternal)
 }
 
+// Internalf helper method for creating internal errors with formatted message
+func Internalf(format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(nil, file, line, TypeInternal, format, args...)
+}
+
 // Validation is a helper function to create a new error of type TypeValidation
 func Validation(message string) *Error {
 	_, file, line, _ := runtime.Caller(1)
 	return newerr(nil, message, file, line, TypeValidation)
+}
+
+// Validationf is a helper function to create a new error of type TypeValidation, with formatted message
+func Validationf(format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(nil, file, line, TypeValidation, format, args...)
 }
 
 // InputBody is a helper function to create a new error of type TypeInputBody
@@ -69,10 +110,22 @@ func InputBody(message string) *Error {
 	return newerr(nil, message, file, line, TypeInputBody)
 }
 
+// InputBodyf is a helper function to create a new error of type TypeInputBody, with formatted message
+func InputBodyf(format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(nil, file, line, TypeInputBody, format, args...)
+}
+
 // Duplicate is a helper function to create a new error of type TypeDuplicate
 func Duplicate(message string) *Error {
 	_, file, line, _ := runtime.Caller(1)
 	return newerr(nil, message, file, line, TypeDuplicate)
+}
+
+// Duplicatef is a helper function to create a new error of type TypeDuplicate, with formatted message
+func Duplicatef(format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(nil, file, line, TypeDuplicate, format, args...)
 }
 
 // Unauthenticated is a helper function to create a new error of type TypeUnauthenticated
@@ -81,10 +134,23 @@ func Unauthenticated(message string) *Error {
 	return newerr(nil, message, file, line, TypeUnauthenticated)
 }
 
+// Unauthenticatedf is a helper function to create a new error of type TypeUnauthenticated, with formatted message
+func Unauthenticatedf(format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(nil, file, line, TypeUnauthenticated, format, args...)
+
+}
+
 // Unauthorized is a helper function to create a new error of type TypeUnauthorized
 func Unauthorized(message string) *Error {
 	_, file, line, _ := runtime.Caller(1)
 	return newerr(nil, message, file, line, TypeUnauthorized)
+}
+
+// Unauthorizedf is a helper function to create a new error of type TypeUnauthorized, with formatted message
+func Unauthorizedf(format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(nil, file, line, TypeUnauthorized, format, args...)
 }
 
 // Empty is a helper function to create a new error of type TypeEmpty
@@ -93,10 +159,22 @@ func Empty(message string) *Error {
 	return newerr(nil, message, file, line, TypeEmpty)
 }
 
+// Emptyf is a helper function to create a new error of type TypeEmpty, with formatted message
+func Emptyf(format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(nil, file, line, TypeEmpty, format, args...)
+}
+
 // NotFound is a helper function to create a new error of type TypeNotFound
 func NotFound(message string) *Error {
 	_, file, line, _ := runtime.Caller(1)
 	return newerr(nil, message, file, line, TypeNotFound)
+}
+
+// NotFoundf is a helper function to create a new error of type TypeNotFound, with formatted message
+func NotFoundf(format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(nil, file, line, TypeNotFound, format, args...)
 }
 
 // MaximumAttempts is a helper function to create a new error of type TypeMaximumAttempts
@@ -105,10 +183,22 @@ func MaximumAttempts(message string) *Error {
 	return newerr(nil, message, file, line, TypeMaximumAttempts)
 }
 
+// MaximumAttemptsf is a helper function to create a new error of type TypeMaximumAttempts, with formatted message
+func MaximumAttemptsf(format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(nil, file, line, TypeMaximumAttempts, format, args...)
+}
+
 // SubscriptionExpired is a helper function to create a new error of type TypeSubscriptionExpired
 func SubscriptionExpired(message string) *Error {
 	_, file, line, _ := runtime.Caller(1)
 	return newerr(nil, message, file, line, TypeSubscriptionExpired)
+}
+
+// SubscriptionExpiredf is a helper function to create a new error of type TypeSubscriptionExpired, with formatted message
+func SubscriptionExpiredf(format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(nil, file, line, TypeSubscriptionExpired, format, args...)
 }
 
 // DownstreamDependencyTimedout is a helper function to create a new error of type TypeDownstreamDependencyTimedout
@@ -117,10 +207,22 @@ func DownstreamDependencyTimedout(message string) *Error {
 	return newerr(nil, message, file, line, TypeDownstreamDependencyTimedout)
 }
 
+// DownstreamDependencyTimedoutf is a helper function to create a new error of type TypeDownstreamDependencyTimedout, with formatted message
+func DownstreamDependencyTimedoutf(format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(nil, file, line, TypeDownstreamDependencyTimedout, format, args...)
+}
+
 // InternalErr helper method for creation internal errors which also accepts an original error
 func InternalErr(original error, message string) *Error {
 	_, file, line, _ := runtime.Caller(1)
 	return newerr(original, message, file, line, TypeInternal)
+}
+
+// InternalErr helper method for creation internal errors which also accepts an original error, with formatted message
+func InternalErrf(original error, format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(original, file, line, TypeInternal, format, args...)
 }
 
 // ValidationErr helper method for creation validation errors which also accepts an original error
@@ -129,10 +231,22 @@ func ValidationErr(original error, message string) *Error {
 	return newerr(original, message, file, line, TypeValidation)
 }
 
+// ValidationErr helper method for creation validation errors which also accepts an original error, with formatted message
+func ValidationErrf(original error, format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(original, file, line, TypeValidation, format, args...)
+}
+
 // InputBodyErr is a helper function to create a new error of type TypeInputBody which also accepts an original error
 func InputBodyErr(original error, message string) *Error {
 	_, file, line, _ := runtime.Caller(1)
 	return newerr(original, message, file, line, TypeInputBody)
+}
+
+// InputBodyErrf is a helper function to create a new error of type TypeInputBody which also accepts an original error, with formatted message
+func InputBodyErrf(original error, format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(original, file, line, TypeInputBody, format, args...)
 }
 
 // DuplicateErr is a helper function to create a new error of type TypeDuplicate which also accepts an original error
@@ -141,10 +255,22 @@ func DuplicateErr(original error, message string) *Error {
 	return newerr(original, message, file, line, TypeDuplicate)
 }
 
+// DuplicateErrf is a helper function to create a new error of type TypeDuplicate which also accepts an original error, with formatted message
+func DuplicateErrf(original error, format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(original, file, line, TypeDuplicate, format, args...)
+}
+
 // UnauthenticatedErr is a helper function to create a new error of type TypeUnauthenticated which also accepts an original error
 func UnauthenticatedErr(original error, message string) *Error {
 	_, file, line, _ := runtime.Caller(1)
 	return newerr(original, message, file, line, TypeUnauthenticated)
+}
+
+// UnauthenticatedErrf is a helper function to create a new error of type TypeUnauthenticated which also accepts an original error, with formatted message
+func UnauthenticatedErrf(original error, format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(original, file, line, TypeUnauthenticated, format, args...)
 }
 
 // UnauthorizedErr is a helper function to create a new error of type TypeUnauthorized which also accepts an original error
@@ -153,10 +279,22 @@ func UnauthorizedErr(original error, message string) *Error {
 	return newerr(original, message, file, line, TypeUnauthorized)
 }
 
+// UnauthorizedErrf is a helper function to create a new error of type TypeUnauthorized which also accepts an original error, with formatted message
+func UnauthorizedErrf(original error, format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(original, file, line, TypeUnauthorized, format, args...)
+}
+
 // EmptyErr is a helper function to create a new error of type TypeEmpty which also accepts an original error
 func EmptyErr(original error, message string) *Error {
 	_, file, line, _ := runtime.Caller(1)
 	return newerr(original, message, file, line, TypeEmpty)
+}
+
+// EmptyErr is a helper function to create a new error of type TypeEmpty which also accepts an original error, with formatted message
+func EmptyErrf(original error, format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(original, file, line, TypeEmpty, format, args...)
 }
 
 // NotFoundErr is a helper function to create a new error of type TypeNotFound which also accepts an original error
@@ -165,10 +303,22 @@ func NotFoundErr(original error, message string) *Error {
 	return newerr(original, message, file, line, TypeNotFound)
 }
 
+// NotFoundErrf is a helper function to create a new error of type TypeNotFound which also accepts an original error, with formatted message
+func NotFoundErrf(original error, format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(original, file, line, TypeNotFound, format, args...)
+}
+
 // MaximumAttemptsErr is a helper function to create a new error of type TypeMaximumAttempts which also accepts an original error
 func MaximumAttemptsErr(original error, message string) *Error {
 	_, file, line, _ := runtime.Caller(1)
 	return newerr(original, message, file, line, TypeMaximumAttempts)
+}
+
+// MaximumAttemptsErr is a helper function to create a new error of type TypeMaximumAttempts which also accepts an original error, with formatted message
+func MaximumAttemptsErrf(original error, format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(original, file, line, TypeMaximumAttempts, format, args...)
 }
 
 // SubscriptionExpiredErr is a helper function to create a new error of type TypeSubscriptionExpired which also accepts an original error
@@ -177,10 +327,22 @@ func SubscriptionExpiredErr(original error, message string) *Error {
 	return newerr(original, message, file, line, TypeSubscriptionExpired)
 }
 
+// SubscriptionExpiredErrf is a helper function to create a new error of type TypeSubscriptionExpired which also accepts an original error, with formatted message
+func SubscriptionExpiredErrf(original error, format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(original, file, line, TypeSubscriptionExpired, format, args...)
+}
+
 // DownstreamDependencyTimedoutErr is a helper function to create a new error of type TypeDownstreamDependencyTimedout which also accepts an original error
 func DownstreamDependencyTimedoutErr(original error, message string) *Error {
 	_, file, line, _ := runtime.Caller(1)
 	return newerr(original, message, file, line, TypeDownstreamDependencyTimedout)
+}
+
+// DownstreamDependencyTimedoutErrf is a helper function to create a new error of type TypeDownstreamDependencyTimedout which also accepts an original error, with formatted message
+func DownstreamDependencyTimedoutErrf(original error, format string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(original, file, line, TypeDownstreamDependencyTimedout, format, args...)
 }
 
 // HTTPStatusCodeMessage returns the appropriate HTTP status code, message, boolean for the error
