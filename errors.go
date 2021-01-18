@@ -104,15 +104,11 @@ func (e *Error) Message() string {
 		return strings.Join(messages, ". ")
 	}
 
-	return e.message
+	return e.Error()
 }
 
 // Unwrap implement's Go 1.13's Unwrap interface exposing the wrapped error
 func (e *Error) Unwrap() error {
-	if e.original == nil {
-		return nil
-	}
-
 	return e.original
 }
 

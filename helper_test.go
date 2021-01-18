@@ -189,6 +189,197 @@ func TestHelperFnsForAllTypes(t *testing.T) {
 	}
 }
 
+func TestHelperFnsForAllTypesFormattedMsg(t *testing.T) {
+	type args struct {
+		message string
+		format  string
+		eType   errType
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "TypeInternal",
+			args: args{
+				eType:   TypeInternal,
+				format:  "%s prefixed",
+				message: "internal error",
+			},
+		},
+		{
+			name: "TypeValidation",
+			args: args{
+				eType:   TypeValidation,
+				format:  "%s prefixed",
+				message: "validation error",
+			},
+		},
+		{
+			name: "TypeInputBody",
+			args: args{
+				eType:   TypeInputBody,
+				format:  "%s prefixed",
+				message: "invalid input body",
+			},
+		},
+		{
+			name: "TypeDuplicate",
+			args: args{
+				eType:   TypeDuplicate,
+				format:  "%s prefixed",
+				message: "duplicate contennt",
+			},
+		},
+		{
+			name: "TypeUnauthenticated",
+			args: args{
+				eType:   TypeUnauthenticated,
+				format:  "%s prefixed",
+				message: "not authenticated",
+			},
+		},
+		{
+			name: "TypeUnauthorized",
+			args: args{
+				eType:   TypeUnauthorized,
+				format:  "%s prefixed",
+				message: "not authorized",
+			},
+		},
+		{
+			name: "TypeEmpty",
+			args: args{
+				eType:   TypeEmpty,
+				format:  "%s prefixed",
+				message: "empty content",
+			},
+		},
+		{
+			name: "TypeNotFound",
+			args: args{
+				eType:   TypeNotFound,
+				format:  "%s prefixed",
+				message: "resource not found",
+			},
+		},
+		{
+			name: "TypeMaximumAttempts",
+			args: args{
+				eType:   TypeMaximumAttempts,
+				format:  "%s prefixed",
+				message: "exceeded maximum number of allowed attempts",
+			},
+		},
+		{
+			name: "TypeSubscriptionExpired",
+			args: args{
+				eType:   TypeSubscriptionExpired,
+				format:  "%s prefixed",
+				message: "subscription expired",
+			},
+		},
+		{
+			name: "TypeDownstreamDependencyTimedout",
+			args: args{
+				eType:   TypeDownstreamDependencyTimedout,
+				format:  "%s prefixed",
+				message: "downstream dependency call timed out",
+			},
+		},
+	}
+	for _, tt := range tests {
+		var want, got *Error
+		switch tt.args.eType {
+		case TypeInternal:
+			{
+				got = Internalf(tt.args.format, tt.args.message)
+				_, file, line, _ := runtime.Caller(0)
+				line--
+				want = newerrf(nil, file, line, TypeInternal, tt.args.format, tt.args.message)
+			}
+		case TypeValidation:
+			{
+				got = Validationf(tt.args.format, tt.args.message)
+				_, file, line, _ := runtime.Caller(0)
+				line--
+				want = newerrf(nil, file, line, TypeValidation, tt.args.format, tt.args.message)
+			}
+		case TypeInputBody:
+			{
+				got = InputBodyf(tt.args.format, tt.args.message)
+				_, file, line, _ := runtime.Caller(0)
+				line--
+				want = newerrf(nil, file, line, TypeInputBody, tt.args.format, tt.args.message)
+			}
+		case TypeDuplicate:
+			{
+				got = Duplicatef(tt.args.format, tt.args.message)
+				_, file, line, _ := runtime.Caller(0)
+				line--
+				want = newerrf(nil, file, line, TypeDuplicate, tt.args.format, tt.args.message)
+			}
+		case TypeUnauthenticated:
+			{
+				got = Unauthenticatedf(tt.args.format, tt.args.message)
+				_, file, line, _ := runtime.Caller(0)
+				line--
+				want = newerrf(nil, file, line, TypeUnauthenticated, tt.args.format, tt.args.message)
+			}
+		case TypeUnauthorized:
+			{
+				got = Unauthorizedf(tt.args.format, tt.args.message)
+				_, file, line, _ := runtime.Caller(0)
+				line--
+				want = newerrf(nil, file, line, TypeUnauthorized, tt.args.format, tt.args.message)
+			}
+
+		case TypeEmpty:
+			{
+				got = Emptyf(tt.args.format, tt.args.message)
+				_, file, line, _ := runtime.Caller(0)
+				line--
+				want = newerrf(nil, file, line, TypeEmpty, tt.args.format, tt.args.message)
+			}
+
+		case TypeNotFound:
+			{
+				got = NotFoundf(tt.args.format, tt.args.message)
+				_, file, line, _ := runtime.Caller(0)
+				line--
+				want = newerrf(nil, file, line, TypeNotFound, tt.args.format, tt.args.message)
+			}
+
+		case TypeMaximumAttempts:
+			{
+				got = MaximumAttemptsf(tt.args.format, tt.args.message)
+				_, file, line, _ := runtime.Caller(0)
+				line--
+				want = newerrf(nil, file, line, TypeMaximumAttempts, tt.args.format, tt.args.message)
+			}
+		case TypeSubscriptionExpired:
+			{
+				got = SubscriptionExpiredf(tt.args.format, tt.args.message)
+				_, file, line, _ := runtime.Caller(0)
+				line--
+				want = newerrf(nil, file, line, TypeSubscriptionExpired, tt.args.format, tt.args.message)
+			}
+		case TypeDownstreamDependencyTimedout:
+			{
+				got = DownstreamDependencyTimedoutf(tt.args.format, tt.args.message)
+				_, file, line, _ := runtime.Caller(0)
+				line--
+				want = newerrf(nil, file, line, TypeDownstreamDependencyTimedout, tt.args.format, tt.args.message)
+			}
+
+		}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("%v() = %v, want %v", tt.args.eType, got, want)
+		}
+	}
+}
+
 func TestHelperFnsForAllTypesWithOriginalError(t *testing.T) {
 	originalErr := errors.New("error returned by some other package")
 	type args struct {
@@ -359,6 +550,198 @@ func TestHelperFnsForAllTypesWithOriginalError(t *testing.T) {
 				_, file, line, _ := runtime.Caller(0)
 				line--
 				want = newerr(originalErr, tt.args.message, file, line, TypeDownstreamDependencyTimedout)
+			}
+
+		}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("Validation() = %v, want %v", got, want)
+		}
+	}
+}
+
+func TestHelperFnsForAllTypesWithOriginalErrorFromatted(t *testing.T) {
+	originalErr := errors.New("error returned by some other package")
+	type args struct {
+		format  string
+		message string
+		eType   errType
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "TypeInternal",
+			args: args{
+				eType:   TypeInternal,
+				format:  "% prefixed",
+				message: "internal error",
+			},
+		},
+		{
+			name: "TypeValidation",
+			args: args{
+				eType:   TypeValidation,
+				format:  "% prefixed",
+				message: "validation error",
+			},
+		},
+		{
+			name: "TypeInputBody",
+			args: args{
+				eType:   TypeInputBody,
+				format:  "% prefixed",
+				message: "invalid input body",
+			},
+		},
+		{
+			name: "TypeDuplicate",
+			args: args{
+				eType:   TypeDuplicate,
+				format:  "% prefixed",
+				message: "duplicate contennt",
+			},
+		},
+		{
+			name: "TypeUnauthenticated",
+			args: args{
+				eType:   TypeUnauthenticated,
+				format:  "% prefixed",
+				message: "not authenticated",
+			},
+		},
+		{
+			name: "TypeUnauthorized",
+			args: args{
+				eType:   TypeUnauthorized,
+				format:  "% prefixed",
+				message: "not authorized",
+			},
+		},
+		{
+			name: "TypeEmpty",
+			args: args{
+				eType:   TypeEmpty,
+				format:  "% prefixed",
+				message: "empty content",
+			},
+		},
+		{
+			name: "TypeNotFound",
+			args: args{
+				eType:   TypeNotFound,
+				format:  "% prefixed",
+				message: "resource not found",
+			},
+		},
+		{
+			name: "TypeMaximumAttempts",
+			args: args{
+				eType:   TypeMaximumAttempts,
+				format:  "% prefixed",
+				message: "exceeded maximum number of allowed attempts",
+			},
+		},
+		{
+			name: "TypeSubscriptionExpired",
+			args: args{
+				eType:   TypeSubscriptionExpired,
+				format:  "% prefixed",
+				message: "subscription expired",
+			},
+		},
+		{
+			name: "TypeDownstreamDependencyTimedout",
+			args: args{
+				eType:   TypeDownstreamDependencyTimedout,
+				format:  "% prefixed",
+				message: "downstream dependency call timed out",
+			},
+		},
+	}
+	for _, tt := range tests {
+		var want, got *Error
+		switch tt.args.eType {
+		case TypeInternal:
+			{
+				got = InternalErrf(originalErr, tt.args.format, tt.args.message)
+				_, file, line, _ := runtime.Caller(0)
+				line--
+				want = newerrf(originalErr, file, line, TypeInternal, tt.args.format, tt.args.message)
+			}
+		case TypeValidation:
+			{
+				got = ValidationErrf(originalErr, tt.args.format, tt.args.message)
+				_, file, line, _ := runtime.Caller(0)
+				line--
+				want = newerrf(originalErr, file, line, TypeValidation, tt.args.format, tt.args.message)
+			}
+		case TypeInputBody:
+			{
+				got = InputBodyErrf(originalErr, tt.args.format, tt.args.message)
+				_, file, line, _ := runtime.Caller(0)
+				line--
+				want = newerrf(originalErr, file, line, TypeInputBody, tt.args.format, tt.args.message)
+			}
+		case TypeDuplicate:
+			{
+				got = DuplicateErrf(originalErr, tt.args.format, tt.args.message)
+				_, file, line, _ := runtime.Caller(0)
+				line--
+				want = newerrf(originalErr, file, line, TypeDuplicate, tt.args.format, tt.args.message)
+			}
+		case TypeUnauthenticated:
+			{
+				got = UnauthenticatedErrf(originalErr, tt.args.format, tt.args.message)
+				_, file, line, _ := runtime.Caller(0)
+				line--
+				want = newerrf(originalErr, file, line, TypeUnauthenticated, tt.args.format, tt.args.message)
+			}
+		case TypeUnauthorized:
+			{
+				got = UnauthorizedErrf(originalErr, tt.args.format, tt.args.message)
+				_, file, line, _ := runtime.Caller(0)
+				line--
+				want = newerrf(originalErr, file, line, TypeUnauthorized, tt.args.format, tt.args.message)
+			}
+
+		case TypeEmpty:
+			{
+				got = EmptyErrf(originalErr, tt.args.format, tt.args.message)
+				_, file, line, _ := runtime.Caller(0)
+				line--
+				want = newerrf(originalErr, file, line, TypeEmpty, tt.args.format, tt.args.message)
+			}
+
+		case TypeNotFound:
+			{
+				got = NotFoundErrf(originalErr, tt.args.format, tt.args.message)
+				_, file, line, _ := runtime.Caller(0)
+				line--
+				want = newerrf(originalErr, file, line, TypeNotFound, tt.args.format, tt.args.message)
+			}
+
+		case TypeMaximumAttempts:
+			{
+				got = MaximumAttemptsErrf(originalErr, tt.args.format, tt.args.message)
+				_, file, line, _ := runtime.Caller(0)
+				line--
+				want = newerrf(originalErr, file, line, TypeMaximumAttempts, tt.args.format, tt.args.message)
+			}
+		case TypeSubscriptionExpired:
+			{
+				got = SubscriptionExpiredErrf(originalErr, tt.args.format, tt.args.message)
+				_, file, line, _ := runtime.Caller(0)
+				line--
+				want = newerrf(originalErr, file, line, TypeSubscriptionExpired, tt.args.format, tt.args.message)
+			}
+		case TypeDownstreamDependencyTimedout:
+			{
+				got = DownstreamDependencyTimedoutErrf(originalErr, tt.args.format, tt.args.message)
+				_, file, line, _ := runtime.Caller(0)
+				line--
+				want = newerrf(originalErr, file, line, TypeDownstreamDependencyTimedout, tt.args.format, tt.args.message)
 			}
 
 		}

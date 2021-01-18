@@ -180,6 +180,11 @@ func Benchmark_Internal(b *testing.B) {
 		Internal("hello world")
 	}
 }
+func Benchmark_Internalf(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Internalf("%s prefixed", "hello world")
+	}
+}
 
 func Benchmark_InternalErr(b *testing.B) {
 	err := errors.New("bad error")
@@ -251,7 +256,7 @@ func TestError_Message(t *testing.T) {
 				eType:    TypeInternal,
 				fileLine: "errors.go:87",
 			},
-			want: "",
+			want: "errors.go:87 unknown error occurred",
 		},
 		{
 			name: "Nested error with message",
