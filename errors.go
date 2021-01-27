@@ -179,6 +179,11 @@ func New(msg string) *Error {
 	return newerr(nil, msg, file, line, defaultErrType)
 }
 
+func Newf(fromat string, args ...interface{}) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return newerrf(nil, file, line, defaultErrType, fromat, args...)
+}
+
 // SetDefaultType will set the default error type, which is used in the 'New' function
 func SetDefaultType(e errType) {
 	defaultErrType = e
