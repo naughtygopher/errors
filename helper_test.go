@@ -1212,3 +1212,48 @@ func Test_newerrf(t *testing.T) {
 		})
 	}
 }
+
+func TestWrapf(t *testing.T) {
+	type args struct {
+		original error
+		format   string
+		args     []interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "with original error",
+			args: args{
+				original: errors.New("hello error"),
+				format:   "failed to retrieve (id: %d)",
+				args: []interface{}{
+					1,
+				},
+			},
+		},
+		{
+			name: "no original error",
+			args: args{
+				original: nil,
+				format:   "failed to retrieve (id: %d)",
+				args: []interface{}{
+					1,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Wrapf(tt.args.original, tt.args.format, tt.args.args...)
+			_, file, line, _ := runtime.Caller(0)
+			line--
+			want := newerrf(tt.args.original, file, line, TypeInternal, tt.args.format, tt.args.args...)
+			if !reflect.DeepEqual(got, want) {
+				t.Errorf("wanted '%v' got '%v'", want, got)
+			}
+		})
+	}
+}

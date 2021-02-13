@@ -27,33 +27,33 @@ func newerrf(e error, file string, line int, etype errType, format string, args 
 // Wrap is used to simply wrap an error with no custom error message with Error struct; with the error
 // type being defaulted to `TypeInternal`
 // If the error being wrapped is already of type Error, then its respective type is used
-func Wrap(err error, msg ...string) *Error {
+func Wrap(original error, msg ...string) *Error {
 	message := strings.Join(msg, ". ")
 	_, file, line, _ := runtime.Caller(1)
-	e, _ := err.(*Error)
+	e, _ := original.(*Error)
 	if e == nil {
-		return newerr(err, message, file, line, TypeInternal)
+		return newerr(original, message, file, line, TypeInternal)
 	}
-	return newerr(err, message, file, line, e.eType)
+	return newerr(original, message, file, line, e.eType)
 }
 
-func Wrapf(err error, format string, args ...interface{}) *Error {
+func Wrapf(original error, format string, args ...interface{}) *Error {
 	_, file, line, _ := runtime.Caller(1)
-	e, _ := err.(*Error)
+	e, _ := original.(*Error)
 	if e == nil {
-		return newerrf(e, file, line, TypeInternal, format, args...)
+		return newerrf(original, file, line, TypeInternal, format, args...)
 	}
-	return newerrf(e, file, line, e.Type(), format, args...)
+	return newerrf(original, file, line, e.Type(), format, args...)
 }
 
 // WrapWithMsg [deprecated, use `Wrap`] wrap error with a user friendly message
-func WrapWithMsg(err error, msg string) *Error {
+func WrapWithMsg(original error, msg string) *Error {
 	_, file, line, _ := runtime.Caller(1)
-	e, _ := err.(*Error)
+	e, _ := original.(*Error)
 	if e == nil {
-		return newerr(err, msg, file, line, TypeInternal)
+		return newerr(original, msg, file, line, TypeInternal)
 	}
-	return newerr(err, msg, file, line, e.eType)
+	return newerr(original, msg, file, line, e.eType)
 }
 
 // NewWithType returns an error instance with custom error type
@@ -69,15 +69,15 @@ func NewWithTypef(etype errType, format string, args ...interface{}) *Error {
 }
 
 // NewWithErrMsgType returns an error instance with custom error type and message
-func NewWithErrMsgType(e error, message string, etype errType) *Error {
+func NewWithErrMsgType(original error, message string, etype errType) *Error {
 	_, file, line, _ := runtime.Caller(1)
-	return newerr(e, message, file, line, etype)
+	return newerr(original, message, file, line, etype)
 }
 
 // NewWithErrMsgTypef returns an error instance with custom error type and formatted message
-func NewWithErrMsgTypef(e error, etype errType, format string, args ...interface{}) *Error {
+func NewWithErrMsgTypef(original error, etype errType, format string, args ...interface{}) *Error {
 	_, file, line, _ := runtime.Caller(1)
-	return newerrf(e, file, line, etype, format, args...)
+	return newerrf(original, file, line, etype, format, args...)
 }
 
 // Internal helper method for creating internal errors
