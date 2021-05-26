@@ -356,6 +356,32 @@ func HTTPStatusCodeMessage(err error) (int, string, bool) {
 	return http.StatusInternalServerError, err.Error(), false
 }
 
+// ErrWithoutTrace is a duplicate of Message, but with clearer name. The boolean is 'true' if the
+// provided err is of type *Error
+func ErrWithoutTrace(err error) (string, bool) {
+	return Message(err)
+}
+
+// Message recursively concatenates all the messages set while creating/wrapping the errors. The boolean
+// is 'true' if the provided error is of type *Err
+func Message(err error) (string, bool) {
+	derr, _ := err.(*Error)
+	if derr != nil {
+		return derr.Message(), true
+	}
+	return "", false
+}
+
+// HTTPStatusCode returns appropriate HTTP response status code based on type of the error. The boolean
+// is 'true' if the provided error is of type *Err
+func HTTPStatusCode(err error) (int, bool) {
+	derr, _ := err.(*Error)
+	if derr != nil {
+		return derr.HTTPStatusCode(), true
+	}
+	return 0, false
+}
+
 // WriteHTTP is a convenience method which will check if the error is of type *Error and
 // respond appropriately
 func WriteHTTP(err error, w http.ResponseWriter) {
