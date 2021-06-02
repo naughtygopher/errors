@@ -2,6 +2,8 @@
 package errors
 
 import (
+	"fmt"
+	"io"
 	"net/http"
 	"runtime"
 	"strings"
@@ -62,24 +64,41 @@ type Error struct {
 func (e *Error) Error() string {
 	if e.original != nil {
 		// string concatenation with + is ~100x faster than fmt.Sprintf()
-		return e.fileLine + " " + e.original.Error()
-		/*
-			// use the following code instead of the above return, to avoid nested filename:line
-			err, _ := e.original.(*Error)
-			if err != nil {
-			    return err.Error()
-			}
-			return fmt.Sprintf("%s %s", e.fileLine, e.original.Error())
-		*/
+		return e.fileLine + ": " + e.message + "\n" + e.original.Error()
 	}
 
 	if e.message != "" {
 		// string concatenation with + is ~100x faster than fmt.Sprintf()
-		return e.fileLine + " " + e.message
+		return e.fileLine + ": " + e.message
 	}
 
 	// string concatenation with + is ~100x faster than fmt.Sprintf()
-	return e.fileLine + " " + DefaultMessage
+	return e.fileLine + ": " + DefaultMessage
+}
+
+// ErrorWithoutFileLine prints the final string without the stack trace / file+line number
+func (e *Error) ErrorWithoutFileLine() string {
+	if e.original != nil {
+		if e.message != "" {
+			// string concatenation with + is ~100x faster than fmt.Sprintf()
+			msg := e.message + ": "
+			if o, ok := e.original.(*Error); ok {
+				msg += o.ErrorWithoutFileLine()
+			} else {
+				msg += e.original.Error()
+			}
+			return msg
+		}
+		return e.original.Error()
+	}
+
+	if e.message != "" {
+		// string concatenation with + is ~100x faster than fmt.Sprintf()
+		return e.message
+	}
+
+	// string concatenation with + is ~100x faster than fmt.Sprintf()
+	return e.fileLine
 }
 
 // Message returns the user friendly message stored in the error struct. It will ignore all errors
@@ -101,7 +120,7 @@ func (e *Error) Message() string {
 	}
 
 	if len(messages) > 0 {
-		return strings.Join(messages, ". ")
+		return strings.Join(messages, ": ")
 	}
 
 	return e.Error()
@@ -171,6 +190,37 @@ func (e *Error) HTTPStatusCode() int {
 // Type returns the error type as integer
 func (e *Error) Type() errType {
 	return e.eType
+}
+
+// Format implements the verbs supported by Error to be used in fmt annotated/formatted strings
+/*
+%v  - the same output as Message(). i.e. recursively get all the custom messages set by user
+    - if any of the wrapped error is not of type *Error, that will *not* be displayed
+%+v - recursively prints all the messages along with the file & line number. Also includes output of `Error()` of
+non *Error types.
+
+%s  - identical to %v
+%+s - recursively prints all the messages without file & line number. Also includes output `Error()` of
+non *Error types.
+*/
+
+func (e *Error) Format(s fmt.State, verb rune) {
+	switch verb {
+	case 'v':
+		if s.Flag('+') {
+			io.WriteString(s, e.Error())
+		} else {
+			io.WriteString(s, e.Message())
+		}
+	case 's':
+		{
+			if s.Flag('+') {
+				io.WriteString(s, e.ErrorWithoutFileLine())
+			} else {
+				io.WriteString(s, e.Message())
+			}
+		}
+	}
 }
 
 // New returns a new instance of Error with the relavant fields initialized

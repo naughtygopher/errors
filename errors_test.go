@@ -52,7 +52,7 @@ func TestError_Error(t *testing.T) {
 				eType:    TypeInternal,
 				fileLine: "",
 			},
-			want: " hello world",
+			want: ": hello world",
 		},
 		{
 			name: "single error, no original error, has fileline",
@@ -62,7 +62,7 @@ func TestError_Error(t *testing.T) {
 				eType:    TypeInternal,
 				fileLine: "/home/user/main.go:60",
 			},
-			want: "/home/user/main.go:60 hello world",
+			want: "/home/user/main.go:60: hello world",
 		},
 		{
 			name: "with original error",
@@ -72,7 +72,7 @@ func TestError_Error(t *testing.T) {
 				eType:    TypeInternal,
 				fileLine: "/home/user/main.go:60",
 			},
-			want: "/home/user/main.go:60 bad error",
+			want: "/home/user/main.go:60: hello world\nbad error",
 		},
 		{
 			name: "with original error of type *Error",
@@ -82,7 +82,7 @@ func TestError_Error(t *testing.T) {
 				eType:    TypeInternal,
 				fileLine: "",
 			},
-			want: fmt.Sprintf(" %s:%d %s", file, line, sampleErrContent),
+			want: fmt.Sprintf(": hello world\n%s:%d: %s", file, line, sampleErrContent),
 		},
 	}
 	for _, tt := range tests {
@@ -94,7 +94,7 @@ func TestError_Error(t *testing.T) {
 				fileLine: tt.fields.fileLine,
 			}
 			if got := e.Error(); got != tt.want {
-				t.Errorf("Error.Error() = %v, want %v", got, tt.want)
+				t.Errorf("Error.Error() = '%v', want '%v'", got, tt.want)
 			}
 		})
 	}
@@ -256,7 +256,7 @@ func TestError_Message(t *testing.T) {
 				eType:    TypeInternal,
 				fileLine: "errors.go:87",
 			},
-			want: "errors.go:87 unknown error occurred",
+			want: "errors.go:87: unknown error occurred",
 		},
 		{
 			name: "Nested error with message",
