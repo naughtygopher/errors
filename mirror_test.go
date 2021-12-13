@@ -2,6 +2,7 @@ package errors
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 )
 
@@ -104,5 +105,19 @@ func TestIs(t *testing.T) {
 				t.Errorf("Is() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestAs(t *testing.T) {
+	// ref: https://github.com/golang/go/issues/37625#issuecomment-594045710
+	err := fmt.Errorf("fmt error")
+	target := &Error{}
+	if errors.As(err, &target) {
+		t.Error("As() = true, want false")
+	}
+
+	err = New("type *Error")
+	if !errors.As(err, &target) {
+		t.Error("As() = false, want true")
 	}
 }
