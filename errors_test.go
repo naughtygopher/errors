@@ -4,141 +4,115 @@ package errors
 import (
 	"errors"
 	"fmt"
-	"runtime"
+	"reflect"
+	"strings"
 	"testing"
 )
 
-func Test_errType_Int(t *testing.T) {
-	tests := []struct {
-		name string
-		e    errType
-		want int
-	}{
-		{
-			name: "valid",
-			e:    TypeInternal,
-			want: 0,
-		},
+func TestFormat(t *testing.T) {
+
+	bar := func() error {
+		return fmt.Errorf("hello %s", "world!")
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.Int(); got != tt.want {
-				t.Errorf("errType.Int() = %v, want %v", got, tt.want)
-			}
-		})
+
+	foo := func() error {
+		err := bar()
+		if err != nil {
+			return InternalErr(err, "bar is not happy")
+		}
+		return nil
+	}
+
+	err := foo()
+
+	got := fmt.Sprintf("%+v", err)
+	want := "github.com/bnkamalesh/errors/errors_test.go:21: bar is not happy\nhello world!"
+	if !strings.Contains(got, want) {
+		t.Errorf("got %q, want %q", got, want)
+	}
+
+	got = fmt.Sprintf("%v", err)
+	want = "bar is not happy"
+	if !strings.Contains(got, want) {
+		t.Errorf("got %q, want %q", got, want)
+	}
+
+	got = fmt.Sprintf("%+s", err)
+	want = "bar is not happy: hello world!"
+	if !strings.Contains(got, want) {
+		t.Errorf("got %q, want %q", got, want)
+	}
+
+	got = fmt.Sprintf("%s", err)
+	want = "bar is not happy"
+	if !strings.Contains(got, want) {
+		t.Errorf("got %q, want %q", got, want)
+	}
+
+}
+func TestErrorWithoutFileLine(t *testing.T) {
+	err := New("error without file line")
+	want := "error without file line"
+	got := err.ErrorWithoutFileLine()
+	if got != want {
+		t.Errorf("ErrorWithoutFileLine() = %v, want %v", got, want)
+	}
+
+	err = Wrap(err, "wrapped error")
+	want = "wrapped error: error without file line"
+	got = err.ErrorWithoutFileLine()
+	if got != want {
+		t.Errorf("ErrorWithoutFileLine() = %v, want %v", got, want)
+	}
+
+	err = Wrap(errors.New("std err"), "wrapped std error")
+	want = "wrapped std error: std err"
+	got = err.ErrorWithoutFileLine()
+	if got != want {
+		t.Errorf("ErrorWithoutFileLine() = %v, want %v", got, want)
+	}
+
+	err = Wrap(errors.New("std err"), "")
+	want = "std err"
+	got = err.ErrorWithoutFileLine()
+	if got != want {
+		t.Errorf("ErrorWithoutFileLine() = %v, want %v", got, want)
+	}
+
+	err = New("")
+	got = err.ErrorWithoutFileLine()
+	if !strings.Contains(got, "github.com/bnkamalesh/errors/errors_test.go:") {
+		t.Errorf("empty error should have fileline: %s", got)
+	}
+}
+func TestNew(t *testing.T) {
+	message := "friendly error message"
+	want := Error{
+		message: message,
+		eType:   defaultErrType,
+	}
+	e := New(message)
+	e.pcs = nil
+	e.fileLine = ""
+
+	if !reflect.DeepEqual(*e, want) {
+		t.Errorf("New() = %v, want %v", *e, want)
 	}
 }
 
-func TestError_Error(t *testing.T) {
-	sampleErrContent := "foo bar"
-	sampleError, file, line := sampleError(sampleErrContent, TypeInternal)
+func TestErrorf(t *testing.T) {
+	format := "%s prefixed"
+	message := "friendly error message"
+	want := Error{
+		message: fmt.Sprintf(format, message),
+		eType:   defaultErrType,
+	}
+	e := Errorf(format, message)
+	e.pcs = nil
+	e.fileLine = ""
 
-	type fields struct {
-		original error
-		message  string
-		eType    errType
-		fileLine string
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   string
-	}{
-		{
-			name: "single error, no original error, no fileline",
-			fields: fields{
-				original: nil,
-				message:  "hello world",
-				eType:    TypeInternal,
-				fileLine: "",
-			},
-			want: ": hello world",
-		},
-		{
-			name: "single error, no original error, has fileline",
-			fields: fields{
-				original: nil,
-				message:  "hello world",
-				eType:    TypeInternal,
-				fileLine: "/home/user/main.go:60",
-			},
-			want: "/home/user/main.go:60: hello world",
-		},
-		{
-			name: "with original error",
-			fields: fields{
-				original: errors.New("bad error"),
-				message:  "hello world",
-				eType:    TypeInternal,
-				fileLine: "/home/user/main.go:60",
-			},
-			want: "/home/user/main.go:60: hello world\nbad error",
-		},
-		{
-			name: "with original error of type *Error",
-			fields: fields{
-				original: sampleError,
-				message:  "hello world",
-				eType:    TypeInternal,
-				fileLine: "",
-			},
-			want: fmt.Sprintf(": hello world\n%s:%d: %s", file, line, sampleErrContent),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			e := &Error{
-				original: tt.fields.original,
-				message:  tt.fields.message,
-				eType:    tt.fields.eType,
-				fileLine: tt.fields.fileLine,
-			}
-			if got := e.Error(); got != tt.want {
-				t.Errorf("Error.Error() = '%v', want '%v'", got, tt.want)
-			}
-		})
-	}
-}
-
-func sampleError(content string, et errType) (*Error, string, int) {
-	err := NewWithType(content, et)
-	_, file, line, _ := runtime.Caller(0) // calling right here to get the correct filename and linenum
-	line--                                // since the expected line number is -1 where New was called
-	return err, file, line
-}
-
-func TestError_Type(t *testing.T) {
-	type fields struct {
-		original error
-		message  string
-		eType    errType
-		fileLine string
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   errType
-	}{
-		{
-			name: "TypeInternal",
-			fields: fields{
-				eType: TypeInternal,
-			},
-			want: TypeInternal,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			e := &Error{
-				original: tt.fields.original,
-				message:  tt.fields.message,
-				eType:    tt.fields.eType,
-				fileLine: tt.fields.fileLine,
-			}
-			if got := e.Type(); got != tt.want {
-				t.Errorf("Error.Type() = %v, want %v", got, tt.want)
-			}
-		})
+	if !reflect.DeepEqual(*e, want) {
+		t.Fail()
 	}
 }
 
@@ -174,122 +148,35 @@ func TestSetDefaultType(t *testing.T) {
 		})
 	}
 }
-
-func Benchmark_Internal(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Internal("hello world")
+func TestStacktrace(t *testing.T) {
+	err := errors.New("original error")
+	e := Wrap(err, "wrapped error")
+	got := Stacktrace(e)
+	// silly way of verifying the stacktrace is correct, excluding filepaths
+	strings.Contains(got, "errors.TestStacktrace(): wrapped error")
+	strings.Contains(got, "github.com/bnkamalesh/errors/errors_test.go:76")
+	strings.Contains(got, "original error")
+}
+func TestStacktraceNoFormat(t *testing.T) {
+	err := errors.New("original error")
+	e := Wrap(err, "wrapped error")
+	got := strings.Join(StacktraceNoFormat(e), "#")
+	// silly way of verifying the stacktrace is correct, excluding filepaths
+	strings.Contains(got, "errors.TestStacktrace(): wrapped error")
+	strings.Contains(got, "github.com/bnkamalesh/errors/errors_test.go:76")
+	strings.Contains(got, "original error")
+	if strings.Contains(got, "\n") {
+		t.Error("StacktraceNoFormat() should not contain newlines")
 	}
 }
-func Benchmark_Internalf(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Internalf("%s prefixed", "hello world")
-	}
-}
-
-func Benchmark_InternalErr(b *testing.B) {
-	err := errors.New("bad error")
-	for i := 0; i < b.N; i++ {
-		InternalErr(err, "hello world")
-	}
-}
-
-func Benchmark_InternalGetError(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		_ = Internal("hello world").Error()
-	}
-}
-func Benchmark_InternalGetErrorWithNestedError(b *testing.B) {
-	err := errors.New("bad error")
-	for i := 0; i < b.N; i++ {
-		_ = InternalErr(err, "hello world").Error()
-	}
-}
-
-func Benchmark_InternalGetMessage(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		_ = Internal("hello world").Message()
-	}
-}
-
-func Benchmark_InternalGetMessageWithNestedError(b *testing.B) {
-	err := New("bad error")
-	for i := 0; i < b.N; i++ {
-		_ = InternalErr(err, "hello world").Message()
-	}
-}
-
-func Benchmark_HTTPStatusCodeMessage(b *testing.B) {
-	// SubscriptionExpiredErr is the slowest considering it's the last item in switch case
-	err := SubscriptionExpiredErr(SubscriptionExpired("old"), "expired")
-	for i := 0; i < b.N; i++ {
-		_, _, _ = HTTPStatusCodeMessage(err)
-	}
-}
-
-func TestError_Message(t *testing.T) {
-	type fields struct {
-		original error
-		message  string
-		eType    errType
-		fileLine string
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   string
-	}{
-		{
-			name: "No nested error",
-			fields: fields{
-				original: nil,
-				message:  "hello friendly error msg",
-				eType:    TypeInternal,
-				fileLine: "errors.go:87",
-			},
-			want: "hello friendly error msg",
-		},
-		{
-			name: "Empty message",
-			fields: fields{
-				original: nil,
-				message:  "",
-				eType:    TypeInternal,
-				fileLine: "errors.go:87",
-			},
-			want: "errors.go:87: unknown error occurred",
-		},
-		{
-			name: "Nested error with message",
-			fields: fields{
-				original: &Error{
-					original: &Error{
-						message:  "",
-						eType:    TypeInputBody,
-						fileLine: "errors.go:87",
-					},
-					message:  "hello nested err message",
-					eType:    TypeInternal,
-					fileLine: "errors.go:87",
-				},
-				message:  "",
-				eType:    TypeInternal,
-				fileLine: "errors.go:87",
-			},
-			want: "hello nested err message",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			e := &Error{
-				original: tt.fields.original,
-				message:  tt.fields.message,
-				eType:    tt.fields.eType,
-				fileLine: tt.fields.fileLine,
-			}
-			if got := e.Message(); got != tt.want {
-				t.Errorf("Error.Message() = %v, want %v", got, tt.want)
-			}
-		})
+func TestStacktraceCustomFormat(t *testing.T) {
+	err := errors.New("original error")
+	e := Wrap(err, "wrapped error")
+	msgFormat := "message: %m#"
+	traceFormat := "function: %f|"
+	got := StacktraceCustomFormat(msgFormat, traceFormat, e)
+	want := "message: wrapped error#function: github.com/bnkamalesh/errors.TestStacktraceCustomFormat|function: testing.tRunner|message: original error#"
+	if got != want {
+		t.Errorf("StacktraceCustomFormat() = %v, want %v", got, want)
 	}
 }
