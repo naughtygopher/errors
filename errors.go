@@ -290,11 +290,11 @@ func (e *Error) StackTraceCustomFormat(msgformat string, traceFormat string) str
 
 // New returns a new instance of Error with the relavant fields initialized
 func New(msg string) *Error {
-	return newerr(nil, msg, defaultErrType)
+	return newerr(nil, msg, defaultErrType, 2)
 }
 
 func Newf(fromat string, args ...interface{}) *Error {
-	return newerrf(nil, defaultErrType, fromat, args...)
+	return newerrf(nil, defaultErrType, 3, fromat, args...)
 }
 
 // Errorf is a convenience method to create a new instance of Error with formatted message

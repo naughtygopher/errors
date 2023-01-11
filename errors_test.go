@@ -28,25 +28,25 @@ func TestFormat(t *testing.T) {
 	got := fmt.Sprintf("%+v", err)
 	want := "github.com/bnkamalesh/errors/errors_test.go:21: bar is not happy\nhello world!"
 	if !strings.Contains(got, want) {
-		t.Errorf("got %q, want %q", got, want)
+		t.Errorf("got %q\nwant %q", got, want)
 	}
 
 	got = fmt.Sprintf("%v", err)
 	want = "bar is not happy"
 	if !strings.Contains(got, want) {
-		t.Errorf("got %q, want %q", got, want)
+		t.Errorf("got %q\nwant %q", got, want)
 	}
 
 	got = fmt.Sprintf("%+s", err)
 	want = "bar is not happy: hello world!"
 	if !strings.Contains(got, want) {
-		t.Errorf("got %q, want %q", got, want)
+		t.Errorf("got %q\nwant %q", got, want)
 	}
 
 	got = fmt.Sprintf("%s", err)
 	want = "bar is not happy"
 	if !strings.Contains(got, want) {
-		t.Errorf("got %q, want %q", got, want)
+		t.Errorf("got %q\nwant %q", got, want)
 	}
 
 }
@@ -55,28 +55,28 @@ func TestErrorWithoutFileLine(t *testing.T) {
 	want := "error without file line"
 	got := err.ErrorWithoutFileLine()
 	if got != want {
-		t.Errorf("ErrorWithoutFileLine() = %v, want %v", got, want)
+		t.Errorf("ErrorWithoutFileLine() = %v\nwant %v", got, want)
 	}
 
 	err = Wrap(err, "wrapped error")
 	want = "wrapped error: error without file line"
 	got = err.ErrorWithoutFileLine()
 	if got != want {
-		t.Errorf("ErrorWithoutFileLine() = %v, want %v", got, want)
+		t.Errorf("ErrorWithoutFileLine() = %v\nwant %v", got, want)
 	}
 
 	err = Wrap(errors.New("std err"), "wrapped std error")
 	want = "wrapped std error: std err"
 	got = err.ErrorWithoutFileLine()
 	if got != want {
-		t.Errorf("ErrorWithoutFileLine() = %v, want %v", got, want)
+		t.Errorf("ErrorWithoutFileLine() = %v\nwant %v", got, want)
 	}
 
 	err = Wrap(errors.New("std err"), "")
 	want = "std err"
 	got = err.ErrorWithoutFileLine()
 	if got != want {
-		t.Errorf("ErrorWithoutFileLine() = %v, want %v", got, want)
+		t.Errorf("ErrorWithoutFileLine() = %v\nwant %v", got, want)
 	}
 
 	err = New("")
@@ -96,7 +96,7 @@ func TestNew(t *testing.T) {
 	e.fileLine = ""
 
 	if !reflect.DeepEqual(*e, want) {
-		t.Errorf("New() = %v, want %v", *e, want)
+		t.Errorf("New() = %v\nwant %v", *e, want)
 	}
 }
 
@@ -177,6 +177,6 @@ func TestStacktraceCustomFormat(t *testing.T) {
 	got := StacktraceCustomFormat(msgFormat, traceFormat, e)
 	want := "message: wrapped error#function: github.com/bnkamalesh/errors.TestStacktraceCustomFormat|function: testing.tRunner|message: original error#"
 	if got != want {
-		t.Errorf("StacktraceCustomFormat() = %v, want %v", got, want)
+		t.Errorf("StacktraceCustomFormat() = %v\nwant %v", got, want)
 	}
 }
