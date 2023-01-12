@@ -2,6 +2,7 @@
 package errors
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"net/http"
@@ -57,25 +58,43 @@ type Error struct {
 	// Message is meant to be returned as response of API, so this should be a user-friendly message
 	message string
 	// Type is used to define the type of the error, e.g. Server error, validation error etc.
-	eType    errType
-	fileLine string
-	pcs      []uintptr
+	eType errType
+	pcs   []uintptr
+	pc    uintptr
+}
+
+func (e *Error) fileLine() string {
+	if e.pc == 0 {
+		return ""
+	}
+
+	frames := runtime.CallersFrames([]uintptr{e.pc + 1})
+	frame, _ := frames.Next()
+	return frame.File + ":" + strconv.Itoa(frame.Line)
 }
 
 // Error is the implementation of error interface
 func (e *Error) Error() string {
+	fline := e.fileLine()
+	fl := bytes.NewBuffer(make([]byte, 0, len(fline)))
+	if fline != "" {
+		fl.Write([]byte(fline))
+		fl.Write([]byte(": "))
+	}
+
 	if e.original != nil {
 		// string concatenation with + is ~100x faster than fmt.Sprintf()
-		return e.fileLine + ": " + e.message + "\n" + e.original.Error()
+		fl.Write([]byte(e.message + "\n" + e.original.Error()))
 	}
 
 	if e.message != "" {
 		// string concatenation with + is ~100x faster than fmt.Sprintf()
-		return e.fileLine + ": " + e.message
+		fl.Write([]byte(e.message))
+	} else {
+		fl.Write([]byte(DefaultMessage))
 	}
-
 	// string concatenation with + is ~100x faster than fmt.Sprintf()
-	return e.fileLine + ": " + DefaultMessage
+	return fl.String()
 }
 
 // ErrorWithoutFileLine prints the final string without the stack trace / file+line number
@@ -98,7 +117,7 @@ func (e *Error) ErrorWithoutFileLine() string {
 		return e.message
 	}
 
-	return e.fileLine
+	return e.fileLine()
 }
 
 // Message returns the user friendly message stored in the error struct. It will ignore all errors
@@ -247,7 +266,11 @@ func (e *Error) StackTraceNoFormat() []string {
 	rframes := e.RuntimeFrames()
 	frame, ok := rframes.Next()
 	line := strconv.Itoa(frame.Line)
-	trace = append(trace, frame.Function+"(): "+e.message)
+	buff := bytes.NewBuffer(make([]byte, 0, len(e.message)))
+	buff.Write([]byte(frame.Function))
+	buff.Write([]byte("(): "))
+	buff.Write([]byte(e.message))
+	trace = append(trace, buff.String())
 	for ok {
 		trace = append(trace, frame.File+":"+line)
 		frame, ok = rframes.Next()

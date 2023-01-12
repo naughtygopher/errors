@@ -19,7 +19,7 @@ func TestWrap(t *testing.T) {
 	}
 	e := Wrap(err, message)
 	e.pcs = nil
-	e.fileLine = ""
+	e.pc = 0
 	if !reflect.DeepEqual(*e, want) {
 		t.Errorf("New() = %v, want %v", *e, want)
 	}
@@ -33,7 +33,7 @@ func TestWrap(t *testing.T) {
 	}
 	e = Wrap(err, message)
 	e.pcs = nil
-	e.fileLine = ""
+	e.pc = 0
 	if !reflect.DeepEqual(*e, want) {
 		t.Errorf("New() = %v, want %v", *e, want)
 	}
@@ -49,7 +49,7 @@ func TestWrapf(t *testing.T) {
 	}
 	e := Wrapf(err, format, message)
 	e.pcs = nil
-	e.fileLine = ""
+	e.pc = 0
 	if !reflect.DeepEqual(*e, want) {
 		t.Errorf("New() = %v, want %v", *e, want)
 	}
@@ -64,7 +64,7 @@ func TestWrapf(t *testing.T) {
 	}
 	e = Wrapf(err, format, message)
 	e.pcs = nil
-	e.fileLine = ""
+	e.pc = 0
 	if !reflect.DeepEqual(*e, want) {
 		t.Errorf("New() = %v, want %v", *e, want)
 	}
@@ -329,7 +329,6 @@ func TestErrWithoutTrace(t *testing.T) {
 		original error
 		message  string
 		eType    errType
-		fileLine string
 	}
 	tests := []struct {
 		name   string
@@ -342,7 +341,6 @@ func TestErrWithoutTrace(t *testing.T) {
 				original: nil,
 				message:  "hello friendly error msg",
 				eType:    TypeInternal,
-				fileLine: "errors.go:87",
 			},
 			want: "hello friendly error msg",
 		},
@@ -352,26 +350,22 @@ func TestErrWithoutTrace(t *testing.T) {
 				original: nil,
 				message:  "",
 				eType:    TypeInternal,
-				fileLine: "errors.go:87",
 			},
-			want: "errors.go:87: unknown error occurred",
+			want: "unknown error occurred",
 		},
 		{
 			name: "Nested error with message",
 			fields: fields{
 				original: &Error{
 					original: &Error{
-						message:  "",
-						eType:    TypeInputBody,
-						fileLine: "errors.go:87",
+						message: "",
+						eType:   TypeInputBody,
 					},
-					message:  "hello nested err message",
-					eType:    TypeInternal,
-					fileLine: "errors.go:87",
+					message: "hello nested err message",
+					eType:   TypeInternal,
 				},
-				message:  "",
-				eType:    TypeInternal,
-				fileLine: "errors.go:87",
+				message: "",
+				eType:   TypeInternal,
 			},
 			want: "hello nested err message",
 		},
@@ -383,10 +377,9 @@ func TestErrWithoutTrace(t *testing.T) {
 				original: tt.fields.original,
 				message:  tt.fields.message,
 				eType:    tt.fields.eType,
-				fileLine: tt.fields.fileLine,
 			}
 			if got, _ := ErrWithoutTrace(e); got != tt.want {
-				t.Errorf("Error.Message() = %v, want %v", got, tt.want)
+				t.Errorf("Error.ErrWithoutTrace() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -402,7 +395,6 @@ func TestType(t *testing.T) {
 		original error
 		message  string
 		eType    errType
-		fileLine string
 	}
 	tests := []struct {
 		name   string
@@ -423,7 +415,6 @@ func TestType(t *testing.T) {
 				original: tt.fields.original,
 				message:  tt.fields.message,
 				eType:    tt.fields.eType,
-				fileLine: tt.fields.fileLine,
 			}
 			if got := Type(e); got != tt.want {
 				t.Errorf("Error.Type() = %v, want %v", got, tt.want)

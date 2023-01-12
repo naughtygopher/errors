@@ -93,7 +93,7 @@ func TestNew(t *testing.T) {
 	}
 	e := New(message)
 	e.pcs = nil
-	e.fileLine = ""
+	e.pc = 0
 
 	if !reflect.DeepEqual(*e, want) {
 		t.Errorf("New() = %v\nwant %v", *e, want)
@@ -109,7 +109,7 @@ func TestErrorf(t *testing.T) {
 	}
 	e := Errorf(format, message)
 	e.pcs = nil
-	e.fileLine = ""
+	e.pc = 0
 
 	if !reflect.DeepEqual(*e, want) {
 		t.Fail()

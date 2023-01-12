@@ -5,21 +5,19 @@ import (
 	"fmt"
 	"net/http"
 	"runtime"
-	"strconv"
 	"strings"
 )
 
 func newerr(e error, message string, etype errType, skip int) *Error {
-	_, file, line, _ := runtime.Caller(skip)
+	pc, _, _, _ := runtime.Caller(skip)
 	pcs := make([]uintptr, 128)
 	_ = runtime.Callers(skip+1, pcs)
 	return &Error{
 		original: e,
 		message:  message,
 		eType:    etype,
-		// '+' concatenation is ~100x faster than using fmt.Sprintf("%s:%d", file, line)
-		fileLine: file + ":" + strconv.Itoa(line),
 		pcs:      pcs,
+		pc:       pc,
 	}
 }
 
