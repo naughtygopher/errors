@@ -70,29 +70,33 @@ func (e *Error) fileLine() string {
 
 	frames := runtime.CallersFrames([]uintptr{e.pc + 1})
 	frame, _ := frames.Next()
-	return frame.File + ":" + strconv.Itoa(frame.Line)
+	buff := bytes.NewBuffer(make([]byte, 0, 100))
+	buff.WriteString(frame.File)
+	buff.WriteString(":")
+	buff.WriteString(strconv.Itoa(frame.Line))
+	return buff.String()
 }
 
 // Error is the implementation of error interface
 func (e *Error) Error() string {
-	fline := e.fileLine()
-	fl := bytes.NewBuffer(make([]byte, 0, len(fline)))
-	if fline != "" {
-		fl.Write([]byte(fline))
-		fl.Write([]byte(": "))
+	fl := bytes.NewBuffer(make([]byte, 0, 100))
+	fl.WriteString(e.fileLine())
+	if fl.Len() != 0 {
+		fl.WriteString(": ")
 	}
 
 	if e.original != nil {
-		fl.Write([]byte(e.message))
-		fl.Write([]byte("\n"))
-		fl.Write([]byte(e.original.Error()))
+		fl.WriteString(e.message)
+		fl.WriteString("\n")
+		fl.WriteString(e.original.Error())
 	}
 
 	if e.message != "" {
-		fl.Write([]byte(e.message))
-	} else {
-		fl.Write([]byte(DefaultMessage))
+		fl.WriteString(e.message)
+		return fl.String()
 	}
+
+	fl.WriteString(DefaultMessage)
 
 	return fl.String()
 }
@@ -101,12 +105,13 @@ func (e *Error) Error() string {
 func (e *Error) ErrorWithoutFileLine() string {
 	if e.original != nil {
 		if e.message != "" {
-			msg := bytes.NewBuffer([]byte(e.message))
-			msg.Write([]byte(": "))
+			msg := bytes.NewBuffer(make([]byte, 0, 100))
+			msg.WriteString(e.message)
+			msg.WriteString(": ")
 			if o, ok := e.original.(*Error); ok {
-				msg.Write([]byte(o.ErrorWithoutFileLine()))
+				msg.WriteString(o.ErrorWithoutFileLine())
 			} else {
-				msg.Write([]byte(e.original.Error()))
+				msg.WriteString(e.original.Error())
 			}
 			return msg.String()
 		}
@@ -254,16 +259,16 @@ func (e *Error) StackTrace() string {
 	rframes := e.RuntimeFrames()
 	frame, ok := rframes.Next()
 	buff := bytes.NewBuffer(make([]byte, 0, 100))
-	buff.Write([]byte(frame.Function))
-	buff.Write([]byte("(): "))
-	buff.Write([]byte(e.message))
+	buff.WriteString(frame.Function)
+	buff.WriteString("(): ")
+	buff.WriteString(e.message)
 	trace = append(trace, buff.String())
 	for ok {
 		buff.Reset()
-		buff.Write([]byte("\t"))
-		buff.Write([]byte(frame.File))
-		buff.Write([]byte(":"))
-		buff.Write([]byte(strconv.Itoa(frame.Line)))
+		buff.WriteString("\t")
+		buff.WriteString(frame.File)
+		buff.WriteString(":")
+		buff.WriteString(strconv.Itoa(frame.Line))
 		trace = append(trace, buff.String())
 		frame, ok = rframes.Next()
 	}
@@ -276,17 +281,17 @@ func (e *Error) StackTraceNoFormat() []string {
 	frame, ok := rframes.Next()
 	line := strconv.Itoa(frame.Line)
 
-	buff := bytes.NewBuffer(make([]byte, 0, len(e.message)))
-	buff.Write([]byte(frame.Function))
-	buff.Write([]byte("(): "))
-	buff.Write([]byte(e.message))
+	buff := bytes.NewBuffer(make([]byte, 0, 100))
+	buff.WriteString(frame.Function)
+	buff.WriteString("(): ")
+	buff.WriteString(e.message)
 
 	trace = append(trace, buff.String())
 	for ok {
 		buff.Reset()
-		buff.Write([]byte(frame.File))
-		buff.Write([]byte(":"))
-		buff.Write([]byte(line))
+		buff.WriteString(frame.File)
+		buff.WriteString(":")
+		buff.WriteString(line)
 		trace = append(trace, buff.String())
 		frame, ok = rframes.Next()
 	}
