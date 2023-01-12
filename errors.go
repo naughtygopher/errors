@@ -234,10 +234,9 @@ func (e *Error) StackTrace() string {
 	trace := make([]string, 0, 100)
 	rframes := e.RuntimeFrames()
 	frame, ok := rframes.Next()
-	line := strconv.Itoa(frame.Line)
 	trace = append(trace, frame.Function+"(): "+e.message)
 	for ok {
-		trace = append(trace, "\t"+frame.File+":"+line)
+		trace = append(trace, "\t"+frame.File+":"+strconv.Itoa(frame.Line))
 		frame, ok = rframes.Next()
 	}
 	return strings.Join(trace, "\n")
@@ -301,7 +300,7 @@ func Newf(fromat string, args ...interface{}) *Error {
 // Important: %w directive is not supported, use fmt.Errorf if you're using the %w directive or
 // use Wrap/Wrapf to wrap an error.
 func Errorf(fromat string, args ...interface{}) *Error {
-	return Newf(fromat, args...)
+	return newerrf(nil, defaultErrType, 3, fromat, args...)
 }
 
 // SetDefaultType will set the default error type, which is used in the 'New' function
