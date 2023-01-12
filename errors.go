@@ -83,17 +83,17 @@ func (e *Error) Error() string {
 	}
 
 	if e.original != nil {
-		// string concatenation with + is ~100x faster than fmt.Sprintf()
-		fl.Write([]byte(e.message + "\n" + e.original.Error()))
+		fl.Write([]byte(e.message))
+		fl.Write([]byte("\n"))
+		fl.Write([]byte(e.original.Error()))
 	}
 
 	if e.message != "" {
-		// string concatenation with + is ~100x faster than fmt.Sprintf()
 		fl.Write([]byte(e.message))
 	} else {
 		fl.Write([]byte(DefaultMessage))
 	}
-	// string concatenation with + is ~100x faster than fmt.Sprintf()
+
 	return fl.String()
 }
 
@@ -101,14 +101,14 @@ func (e *Error) Error() string {
 func (e *Error) ErrorWithoutFileLine() string {
 	if e.original != nil {
 		if e.message != "" {
-			// string concatenation with + is ~100x faster than fmt.Sprintf()
-			msg := e.message + ": "
+			msg := bytes.NewBuffer([]byte(e.message))
+			msg.Write([]byte(": "))
 			if o, ok := e.original.(*Error); ok {
-				msg += o.ErrorWithoutFileLine()
+				msg.Write([]byte(o.ErrorWithoutFileLine()))
 			} else {
-				msg += e.original.Error()
+				msg.Write([]byte(e.original.Error()))
 			}
-			return msg
+			return msg.String()
 		}
 		return e.original.Error()
 	}
@@ -253,9 +253,18 @@ func (e *Error) StackTrace() string {
 	trace := make([]string, 0, 100)
 	rframes := e.RuntimeFrames()
 	frame, ok := rframes.Next()
-	trace = append(trace, frame.Function+"(): "+e.message)
+	buff := bytes.NewBuffer(make([]byte, 0, 100))
+	buff.Write([]byte(frame.Function))
+	buff.Write([]byte("(): "))
+	buff.Write([]byte(e.message))
+	trace = append(trace, buff.String())
 	for ok {
-		trace = append(trace, "\t"+frame.File+":"+strconv.Itoa(frame.Line))
+		buff.Reset()
+		buff.Write([]byte("\t"))
+		buff.Write([]byte(frame.File))
+		buff.Write([]byte(":"))
+		buff.Write([]byte(strconv.Itoa(frame.Line)))
+		trace = append(trace, buff.String())
 		frame, ok = rframes.Next()
 	}
 	return strings.Join(trace, "\n")
@@ -266,13 +275,19 @@ func (e *Error) StackTraceNoFormat() []string {
 	rframes := e.RuntimeFrames()
 	frame, ok := rframes.Next()
 	line := strconv.Itoa(frame.Line)
+
 	buff := bytes.NewBuffer(make([]byte, 0, len(e.message)))
 	buff.Write([]byte(frame.Function))
 	buff.Write([]byte("(): "))
 	buff.Write([]byte(e.message))
+
 	trace = append(trace, buff.String())
 	for ok {
-		trace = append(trace, frame.File+":"+line)
+		buff.Reset()
+		buff.Write([]byte(frame.File))
+		buff.Write([]byte(":"))
+		buff.Write([]byte(line))
+		trace = append(trace, buff.String())
 		frame, ok = rframes.Next()
 	}
 	return trace
