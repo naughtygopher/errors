@@ -70,10 +70,12 @@ func (e *Error) fileLine() string {
 
 	frames := runtime.CallersFrames([]uintptr{e.pc + 1})
 	frame, _ := frames.Next()
+
 	buff := bytes.NewBuffer(make([]byte, 0, 100))
 	buff.WriteString(frame.File)
 	buff.WriteString(":")
 	buff.WriteString(strconv.Itoa(frame.Line))
+
 	return buff.String()
 }
 
@@ -247,7 +249,7 @@ func (e *Error) Format(s fmt.State, verb rune) {
 }
 
 func (e *Error) RuntimeFrames() *runtime.Frames {
-	return runtime.CallersFrames(e.pcs)
+	return runtime.CallersFrames(e.ProgramCounters())
 }
 
 func (e *Error) ProgramCounters() []uintptr {
