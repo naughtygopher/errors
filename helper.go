@@ -26,33 +26,29 @@ func newerrf(e error, etype errType, skip int, format string, args ...interface{
 	return newerr(e, message, etype, skip)
 }
 
+func getErrType(err error) errType {
+	e, _ := err.(*Error)
+	if e == nil {
+		return TypeInternal
+	}
+	return e.Type()
+}
+
 // Wrap is used to simply wrap an error with optional message; error type would be the
 // default error type set using SetDefaultType; TypeInternal otherwise
 // If the error being wrapped is already of type Error, then its respective type is used
 func Wrap(original error, msg ...string) *Error {
 	message := strings.Join(msg, ". ")
-	e, _ := original.(*Error)
-	if e == nil {
-		return newerr(original, message, TypeInternal, 2)
-	}
-	return newerr(original, message, e.eType, 2)
+	return newerr(original, message, getErrType(original), 2)
 }
 
 func Wrapf(original error, format string, args ...interface{}) *Error {
-	e, _ := original.(*Error)
-	if e == nil {
-		return newerrf(original, TypeInternal, 3, format, args...)
-	}
-	return newerrf(original, e.Type(), 3, format, args...)
+	return newerrf(original, getErrType(original), 3, format, args...)
 }
 
 // Deprecated: WrapWithMsg [deprecated, use `Wrap`] wrap error with a user friendly message
 func WrapWithMsg(original error, msg string) *Error {
-	e, _ := original.(*Error)
-	if e == nil {
-		return newerr(original, msg, TypeInternal, 2)
-	}
-	return newerr(original, msg, e.eType, 2)
+	return newerr(original, msg, getErrType(original), 2)
 }
 
 // NewWithType returns an error instance with custom error type
