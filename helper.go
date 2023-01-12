@@ -10,7 +10,7 @@ import (
 )
 
 func newerr(e error, message string, etype errType, skip int) *Error {
-	_, file, line, _ := runtime.Caller(0)
+	_, file, line, _ := runtime.Caller(skip)
 	pcs := make([]uintptr, 128)
 	_ = runtime.Callers(skip+1, pcs)
 	return &Error{
