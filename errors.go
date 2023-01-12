@@ -255,13 +255,14 @@ func (e *Error) ProgramCounters() []uintptr {
 }
 
 func (e *Error) StackTrace() string {
-	trace := make([]string, 0, 100)
 	rframes := e.RuntimeFrames()
 	frame, ok := rframes.Next()
 	buff := bytes.NewBuffer(make([]byte, 0, 100))
 	buff.WriteString(frame.Function)
 	buff.WriteString("(): ")
 	buff.WriteString(e.message)
+
+	trace := make([]string, 0, len(e.ProgramCounters()))
 	trace = append(trace, buff.String())
 	for ok {
 		buff.Reset()
@@ -276,7 +277,6 @@ func (e *Error) StackTrace() string {
 }
 
 func (e *Error) StackTraceNoFormat() []string {
-	trace := make([]string, 0, 100)
 	rframes := e.RuntimeFrames()
 	frame, ok := rframes.Next()
 	line := strconv.Itoa(frame.Line)
@@ -286,6 +286,7 @@ func (e *Error) StackTraceNoFormat() []string {
 	buff.WriteString("(): ")
 	buff.WriteString(e.message)
 
+	trace := make([]string, 0, len(e.ProgramCounters()))
 	trace = append(trace, buff.String())
 	for ok {
 		buff.Reset()
@@ -314,7 +315,7 @@ func (e *Error) StackTraceCustomFormat(msgformat string, traceFormat string) str
 	message = strings.ReplaceAll(message, "%p", frame.File)
 	message = strings.ReplaceAll(message, "%l", strconv.Itoa(frame.Line))
 	message = strings.ReplaceAll(message, "%f", frame.Function)
-	traces := make([]string, 0, 100)
+	traces := make([]string, 0, len(e.ProgramCounters()))
 	traces = append(traces, message)
 
 	for ok {
@@ -332,18 +333,18 @@ func (e *Error) StackTraceCustomFormat(msgformat string, traceFormat string) str
 
 // New returns a new instance of Error with the relavant fields initialized
 func New(msg string) *Error {
-	return newerr(nil, msg, defaultErrType, 2)
+	return newerr(nil, msg, defaultErrType, 3)
 }
 
 func Newf(fromat string, args ...interface{}) *Error {
-	return newerrf(nil, defaultErrType, 3, fromat, args...)
+	return newerrf(nil, defaultErrType, 4, fromat, args...)
 }
 
 // Errorf is a convenience method to create a new instance of Error with formatted message
 // Important: %w directive is not supported, use fmt.Errorf if you're using the %w directive or
 // use Wrap/Wrapf to wrap an error.
 func Errorf(fromat string, args ...interface{}) *Error {
-	return newerrf(nil, defaultErrType, 3, fromat, args...)
+	return newerrf(nil, defaultErrType, 4, fromat, args...)
 }
 
 // SetDefaultType will set the default error type, which is used in the 'New' function
