@@ -9,7 +9,7 @@ import (
 )
 
 func newerr(e error, message string, etype errType, skip int) *Error {
-	pc, _, _, _ := runtime.Caller(skip)
+
 	pcs := make([]uintptr, 128)
 	_ = runtime.Callers(skip+1, pcs)
 	return &Error{
@@ -17,7 +17,7 @@ func newerr(e error, message string, etype errType, skip int) *Error {
 		message:  message,
 		eType:    etype,
 		pcs:      pcs,
-		pc:       pc,
+		pc:       pcs[0] - 1,
 	}
 }
 
