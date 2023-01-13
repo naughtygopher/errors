@@ -309,7 +309,7 @@ Supported directives:
 %l - line
 %f - function
 */
-func (e *Error) StackTraceCustomFormat(msgformat string, traceFormat string) string {
+func (e *Error) StackTraceCustomFormat(msgformat string, traceFormat string) []string {
 	rframes := e.RuntimeFrames()
 	frame, ok := rframes.Next()
 
@@ -330,7 +330,7 @@ func (e *Error) StackTraceCustomFormat(msgformat string, traceFormat string) str
 		frame, ok = rframes.Next()
 	}
 
-	return strings.Join(traces, "")
+	return traces
 }
 
 // New returns a new instance of Error with the relavant fields initialized
@@ -356,20 +356,6 @@ func SetDefaultType(e errType) {
 
 // Stacktrace returns a string representation of the stacktrace, where each trace is separated by a newline and tab '\t'
 func Stacktrace(err error) string {
-	trace := make([]string, 0, 100)
-	for err != nil {
-		e, ok := err.(*Error)
-		if ok {
-			trace = append(trace, strings.Join(e.StackTrace(), "\n"))
-		} else {
-			trace = append(trace, err.Error())
-		}
-		err = Unwrap(err)
-	}
-	return strings.Join(trace, "\n")
-}
-
-func ReverseTrace(err error) string {
 	trace := make([][]string, 0, 100)
 	for err != nil {
 		e, ok := err.(*Error)
@@ -406,17 +392,37 @@ func ReverseTrace(err error) string {
 // Stacktrace returns a string representation of the stacktrace, as a slice of string where each
 // element represents the error message and traces.
 func StacktraceNoFormat(err error) []string {
-	trace := make([]string, 0, 100)
+	trace := make([][]string, 0, 100)
 	for err != nil {
 		e, ok := err.(*Error)
 		if ok {
-			trace = append(trace, e.StackTraceNoFormat()...)
+			trace = append(trace, e.StackTraceNoFormat())
 		} else {
-			trace = append(trace, err.Error())
+			trace = append(trace, []string{err.Error()})
 		}
 		err = Unwrap(err)
 	}
-	return trace
+
+	lookup := map[string]struct{}{}
+	for idx := len(trace) - 1; idx >= 0; idx-- {
+		list := trace[idx]
+		uniqueList := make([]string, 0, len(list))
+		for _, line := range list {
+			_, ok := lookup[line]
+			if ok {
+				break
+			}
+			uniqueList = append(uniqueList, line)
+			lookup[line] = struct{}{}
+		}
+		trace[idx] = uniqueList
+	}
+	final := make([]string, 0, len(trace)*3)
+	for _, list := range trace {
+		final = append(final, list...)
+	}
+
+	return final
 }
 
 // StacktraceCustomFormat lets you prepare a stacktrace in a custom format
@@ -430,7 +436,7 @@ Supported directives:
 %f - function, empty if type is not *Error
 */
 func StacktraceCustomFormat(msgformat string, traceFormat string, err error) string {
-	trace := make([]string, 0, 100)
+	trace := make([][]string, 0, 100)
 	for err != nil {
 		e, ok := err.(*Error)
 		if ok {
@@ -440,15 +446,32 @@ func StacktraceCustomFormat(msgformat string, traceFormat string, err error) str
 			message = strings.ReplaceAll(message, "%p", "")
 			message = strings.ReplaceAll(message, "%l", "")
 			message = strings.ReplaceAll(message, "%f", "")
-
-			trace = append(
-				trace,
-				message,
-			)
+			trace = append(trace, []string{message})
 		}
 		err = Unwrap(err)
 	}
-	return strings.Join(trace, "")
+
+	lookup := map[string]struct{}{}
+	for idx := len(trace) - 1; idx >= 0; idx-- {
+		list := trace[idx]
+		uniqueList := make([]string, 0, len(list))
+		for _, line := range list {
+			_, ok := lookup[line]
+			if ok {
+				break
+			}
+			uniqueList = append(uniqueList, line)
+			lookup[line] = struct{}{}
+		}
+		trace[idx] = uniqueList
+	}
+
+	final := make([]string, 0, len(trace)*3)
+	for _, list := range trace {
+		final = append(final, list...)
+	}
+
+	return strings.Join(final, "\n")
 }
 
 func ProgramCounters(err error) []uintptr {
