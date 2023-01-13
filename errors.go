@@ -256,7 +256,7 @@ func (e *Error) ProgramCounters() []uintptr {
 	return e.pcs
 }
 
-func (e *Error) StackTrace() string {
+func (e *Error) StackTrace() []string {
 	rframes := e.RuntimeFrames()
 	frame, ok := rframes.Next()
 	buff := bytes.NewBuffer(make([]byte, 0, 100))
@@ -275,7 +275,7 @@ func (e *Error) StackTrace() string {
 		trace = append(trace, buff.String())
 		frame, ok = rframes.Next()
 	}
-	return strings.Join(trace, "\n")
+	return trace
 }
 
 func (e *Error) StackTraceNoFormat() []string {
@@ -360,13 +360,47 @@ func Stacktrace(err error) string {
 	for err != nil {
 		e, ok := err.(*Error)
 		if ok {
-			trace = append(trace, e.StackTrace())
+			trace = append(trace, strings.Join(e.StackTrace(), "\n"))
 		} else {
 			trace = append(trace, err.Error())
 		}
 		err = Unwrap(err)
 	}
 	return strings.Join(trace, "\n")
+}
+
+func ReverseTrace(err error) string {
+	trace := make([][]string, 0, 100)
+	for err != nil {
+		e, ok := err.(*Error)
+		if ok {
+			trace = append(trace, e.StackTrace())
+		} else {
+			trace = append(trace, []string{err.Error()})
+		}
+		err = Unwrap(err)
+	}
+
+	lookup := map[string]struct{}{}
+	for idx := len(trace) - 1; idx >= 0; idx-- {
+		list := trace[idx]
+		uniqueList := make([]string, 0, len(list))
+		for _, line := range list {
+			_, ok := lookup[line]
+			if ok {
+				break
+			}
+			uniqueList = append(uniqueList, line)
+			lookup[line] = struct{}{}
+		}
+		trace[idx] = uniqueList
+	}
+	final := make([]string, 0, len(trace)*3)
+	for _, list := range trace {
+		final = append(final, list...)
+	}
+
+	return strings.Join(final, "\n")
 }
 
 // Stacktrace returns a string representation of the stacktrace, as a slice of string where each
