@@ -471,7 +471,7 @@ func StacktraceCustomFormat(msgformat string, traceFormat string, err error) str
 		final = append(final, list...)
 	}
 
-	return strings.Join(final, "\n")
+	return strings.Join(final, "")
 }
 
 func ProgramCounters(err error) []uintptr {
