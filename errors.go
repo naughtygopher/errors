@@ -71,7 +71,7 @@ func (e *Error) fileLine() string {
 	frames := runtime.CallersFrames([]uintptr{e.pc + 1})
 	frame, _ := frames.Next()
 
-	buff := bytes.NewBuffer(make([]byte, 0, 100))
+	buff := bytes.NewBuffer(make([]byte, 0, 128))
 	buff.WriteString(frame.File)
 	buff.WriteString(":")
 	buff.WriteString(strconv.Itoa(frame.Line))
@@ -81,7 +81,7 @@ func (e *Error) fileLine() string {
 
 // Error is the implementation of error interface
 func (e *Error) Error() string {
-	fl := bytes.NewBuffer(make([]byte, 0, 100))
+	fl := bytes.NewBuffer(make([]byte, 0, 128))
 	fl.WriteString(e.fileLine())
 	if fl.Len() != 0 {
 		fl.WriteString(": ")
@@ -107,7 +107,7 @@ func (e *Error) Error() string {
 func (e *Error) ErrorWithoutFileLine() string {
 	if e.original != nil {
 		if e.message != "" {
-			msg := bytes.NewBuffer(make([]byte, 0, 100))
+			msg := bytes.NewBuffer(make([]byte, 0, 128))
 			msg.WriteString(e.message)
 			msg.WriteString(": ")
 			if o, ok := e.original.(*Error); ok {
@@ -259,7 +259,7 @@ func (e *Error) ProgramCounters() []uintptr {
 func (e *Error) StackTrace() []string {
 	rframes := e.RuntimeFrames()
 	frame, ok := rframes.Next()
-	buff := bytes.NewBuffer(make([]byte, 0, 100))
+	buff := bytes.NewBuffer(make([]byte, 0, 128))
 	buff.WriteString(frame.Function)
 	buff.WriteString("(): ")
 	buff.WriteString(e.message)
@@ -283,7 +283,7 @@ func (e *Error) StackTraceNoFormat() []string {
 	frame, ok := rframes.Next()
 	line := strconv.Itoa(frame.Line)
 
-	buff := bytes.NewBuffer(make([]byte, 0, 100))
+	buff := bytes.NewBuffer(make([]byte, 0, 128))
 	buff.WriteString(frame.Function)
 	buff.WriteString("(): ")
 	buff.WriteString(e.message)
@@ -356,7 +356,7 @@ func SetDefaultType(e errType) {
 
 // Stacktrace returns a string representation of the stacktrace, where each trace is separated by a newline and tab '\t'
 func Stacktrace(err error) string {
-	trace := make([][]string, 0, 100)
+	trace := make([][]string, 0, 128)
 	for err != nil {
 		e, ok := err.(*Error)
 		if ok {
@@ -392,7 +392,7 @@ func Stacktrace(err error) string {
 // Stacktrace returns a string representation of the stacktrace, as a slice of string where each
 // element represents the error message and traces.
 func StacktraceNoFormat(err error) []string {
-	trace := make([][]string, 0, 100)
+	trace := make([][]string, 0, 128)
 	for err != nil {
 		e, ok := err.(*Error)
 		if ok {
@@ -436,7 +436,7 @@ Supported directives:
 %f - function, empty if type is not *Error
 */
 func StacktraceCustomFormat(msgformat string, traceFormat string, err error) string {
-	trace := make([][]string, 0, 100)
+	trace := make([][]string, 0, 128)
 	for err != nil {
 		e, ok := err.(*Error)
 		if ok {
@@ -475,18 +475,53 @@ func StacktraceCustomFormat(msgformat string, traceFormat string, err error) str
 }
 
 func ProgramCounters(err error) []uintptr {
-	pcs := make([]uintptr, 0, 100)
+	pcs := make([][]uintptr, 0, 128)
 	for err != nil {
 		e, ok := err.(*Error)
 		if ok {
-			pcs = append(pcs, e.ProgramCounters()...)
+			pcs = append(pcs, e.ProgramCounters())
 		}
 		err = Unwrap(err)
 	}
-	return pcs
+
+	lookup := map[uintptr]struct{}{}
+	for idx := len(pcs) - 1; idx >= 0; idx-- {
+		list := pcs[idx]
+		uniqueList := make([]uintptr, 0, len(list))
+		for _, line := range list {
+			_, ok := lookup[line]
+			if ok {
+				break
+			}
+			uniqueList = append(uniqueList, line)
+			lookup[line] = struct{}{}
+		}
+		pcs[idx] = uniqueList
+	}
+	final := make([]uintptr, 0, len(pcs)*3)
+	for _, list := range pcs {
+		final = append(final, list...)
+	}
+	return final
 }
 
 func RuntimeFrames(err error) *runtime.Frames {
 	pcs := ProgramCounters(err)
 	return runtime.CallersFrames(pcs)
+}
+
+func StacktraceFromPcs(err error) string {
+	pcs := ProgramCounters(err)
+	frames := runtime.CallersFrames(pcs)
+	frame, hasMore := frames.Next()
+	lines := make([]string, 0, len(pcs))
+	if !hasMore {
+		lines = append(lines, frame.File+":"+strconv.Itoa(frame.Line)+":"+frame.Function+"()")
+	}
+	for hasMore {
+		lines = append(lines, frame.File+":"+strconv.Itoa(frame.Line)+":"+frame.Function+"()")
+		frame, hasMore = frames.Next()
+	}
+
+	return strings.Join(lines, "\n")
 }
