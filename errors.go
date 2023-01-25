@@ -81,26 +81,27 @@ func (e *Error) fileLine() string {
 
 // Error is the implementation of error interface
 func (e *Error) Error() string {
-	fl := bytes.NewBuffer(make([]byte, 0, 128))
-	fl.WriteString(e.fileLine())
-	if fl.Len() != 0 {
-		fl.WriteString(": ")
+	str := bytes.NewBuffer(make([]byte, 0, 128))
+	str.WriteString(e.fileLine())
+	if str.Len() != 0 {
+		str.WriteString(": ")
 	}
 
 	if e.original != nil {
-		fl.WriteString(e.message)
-		fl.WriteString("\n")
-		fl.WriteString(e.original.Error())
+		str.WriteString(e.message)
+		str.WriteString("\n")
+		str.WriteString(e.original.Error())
+		return str.String()
 	}
 
 	if e.message != "" {
-		fl.WriteString(e.message)
-		return fl.String()
+		str.WriteString(e.message)
+		return str.String()
 	}
 
-	fl.WriteString(DefaultMessage)
+	str.WriteString(DefaultMessage)
 
-	return fl.String()
+	return str.String()
 }
 
 // ErrorWithoutFileLine prints the final string without the stack trace / file+line number

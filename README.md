@@ -7,7 +7,7 @@
 [![](https://godoc.org/github.com/nathany/looper?status.svg)](https://pkg.go.dev/github.com/bnkamalesh/errors?tab=doc)
 [![](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go#error-handling)
 
-# Errors v0.9.3
+# Errors v0.9.4
 
 Errors package is a drop-in replacement of the built-in Go errors package. It lets you create errors of 11 different types,
 which should handle most of the use cases. Some of them are a bit too specific for web applications, but useful nonetheless.
@@ -138,8 +138,8 @@ import (
 	"time"
 
 	"github.com/bnkamalesh/errors"
-	"github.com/bnkamalesh/webgo/v4"
-	"github.com/bnkamalesh/webgo/v4/middleware"
+	"github.com/bnkamalesh/webgo/v6"
+	"github.com/bnkamalesh/webgo/v6/middleware/accesslog"
 )
 
 func bar() error {
@@ -178,7 +178,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func routes() []*webgo.Route {
 	return []*webgo.Route{
-		&webgo.Route{
+		{
 			Name:    "home",
 			Method:  http.MethodGet,
 			Pattern: "/",
@@ -195,13 +195,12 @@ func main() {
 		Port:         "8080",
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 60 * time.Second,
-	}, routes())
+	}, routes()...)
 
-	router.UseOnSpecialHandlers(middleware.AccessLog)
-	router.Use(middleware.AccessLog)
+	router.UseOnSpecialHandlers(accesslog.AccessLog)
+	router.Use(accesslog.AccessLog)
 	router.Start()
 }
-
 ```
 
 [webgo](https://github.com/bnkamalesh/webgo) was used to illustrate the usage of the function, `errors.HTTPStatusCodeMessage`. It returns the appropriate http status code, user friendly message stored within, and a boolean value. Boolean value is `true` if the returned error of type \*Error.
