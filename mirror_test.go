@@ -123,7 +123,7 @@ func TestAs(t *testing.T) {
 	}
 
 	out := target.Error()
-	want := "github.com/bnkamalesh/errors/mirror_test.go:120: type *Error"
+	want := "/errors/mirror_test.go:120: type *Error"
 	if !strings.Contains(out, want) {
 		t.Errorf("Error() = %s, want %s", out, want)
 	}
