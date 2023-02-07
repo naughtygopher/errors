@@ -26,7 +26,7 @@ func TestFormat(t *testing.T) {
 	err := foo()
 
 	got := fmt.Sprintf("%+v", err)
-	want := "github.com/bnkamalesh/errors/errors_test.go:21: bar is not happy\nhello world!"
+	want := "errors/errors_test.go:21: bar is not happy\nhello world!"
 	if !strings.Contains(got, want) {
 		t.Errorf("got %q\nwant %q", got, want)
 	}
@@ -81,7 +81,7 @@ func TestErrorWithoutFileLine(t *testing.T) {
 
 	err = New("")
 	got = err.ErrorWithoutFileLine()
-	if !strings.Contains(got, "github.com/bnkamalesh/errors/errors_test.go:") {
+	if !strings.Contains(got, "errors/errors_test.go:") {
 		t.Errorf("empty error should have fileline: %s", got)
 	}
 }
@@ -154,7 +154,7 @@ func TestStacktrace(t *testing.T) {
 	got := Stacktrace(e)
 	// silly way of verifying the stacktrace is correct, excluding filepaths
 	strings.Contains(got, "errors.TestStacktrace(): wrapped error")
-	strings.Contains(got, "github.com/bnkamalesh/errors/errors_test.go:76")
+	strings.Contains(got, "errors/errors_test.go:76")
 	strings.Contains(got, "original error")
 }
 func TestStacktraceNoFormat(t *testing.T) {
@@ -163,7 +163,7 @@ func TestStacktraceNoFormat(t *testing.T) {
 	got := strings.Join(StacktraceNoFormat(e), "#")
 	// silly way of verifying the stacktrace is correct, excluding filepaths
 	strings.Contains(got, "errors.TestStacktrace(): wrapped error")
-	strings.Contains(got, "github.com/bnkamalesh/errors/errors_test.go:76")
+	strings.Contains(got, "errors/errors_test.go:76")
 	strings.Contains(got, "original error")
 	if strings.Contains(got, "\n") {
 		t.Error("StacktraceNoFormat() should not contain newlines")

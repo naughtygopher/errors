@@ -1,13 +1,13 @@
 <p align="center"><img src="https://user-images.githubusercontent.com/1092882/87815217-d864a680-c882-11ea-9c94-24b67f7125fe.png" alt="errors gopher" width="256px"/></p>
 
-[![Build Status](https://travis-ci.org/bnkamalesh/errors.svg?branch=master)](https://travis-ci.org/bnkamalesh/errors)
+[![](https://github.com/bnkamalesh/errors/actions/workflows/tests.yaml/badge.svg)](https://github.com/bnkamalesh/errors/actions/workflows/tests.yaml)
 [![codecov](https://codecov.io/gh/bnkamalesh/errors/branch/master/graph/badge.svg)](https://codecov.io/gh/bnkamalesh/errors)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bnkamalesh/errors)](https://goreportcard.com/report/github.com/bnkamalesh/errors)
 [![Maintainability](https://api.codeclimate.com/v1/badges/a86629ab167695d4db7f/maintainability)](https://codeclimate.com/github/bnkamalesh/errors)
 [![](https://godoc.org/github.com/nathany/looper?status.svg)](https://pkg.go.dev/github.com/bnkamalesh/errors?tab=doc)
 [![](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go#error-handling)
 
-# Errors v0.9.4
+# Errors v0.10.0
 
 Errors package is a drop-in replacement of the built-in Go errors package. It lets you create errors of 11 different types,
 which should handle most of the use cases. Some of them are a bit too specific for web applications, but useful nonetheless.
