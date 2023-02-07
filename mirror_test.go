@@ -121,10 +121,11 @@ func TestAs(t *testing.T) {
 	if !errors.As(err, &target) {
 		t.Error("As() = false, want true")
 	}
+
 	out := target.Error()
 	want := "github.com/bnkamalesh/errors/mirror_test.go:120: type *Error"
 	if !strings.Contains(out, want) {
-		t.Errorf("As() = %s, want %s", out, "xx")
+		t.Errorf("Error() = %s, want %s", out, want)
 	}
 
 }
