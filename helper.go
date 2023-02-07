@@ -334,7 +334,7 @@ func WriteHTTP(err error, w http.ResponseWriter) {
 	// INFO: consider sending back "unknown server error" message
 	status, msg, _ := HTTPStatusCodeMessage(err)
 	w.WriteHeader(status)
-	w.Write([]byte(msg))
+	_, _ = w.Write([]byte(msg))
 }
 
 // Type returns the errType if it's an instance of *Error, -1 otherwise
