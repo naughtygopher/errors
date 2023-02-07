@@ -17,8 +17,8 @@ func As(err error, target interface{}) bool {
 	return errors.As(err, target)
 }
 
-// Join returns an error that wraps the given errors.
-// This is the exact implementation of Go v1.20.
+// Join returns an error that combines all the given errors.
+// This is the exact implementation found in Go v1.20.
 // It will be removed when Go >= v1.20 becomes the LTS version, and would just call the
 // native Join after that.
 func Join(errs ...error) error {
