@@ -134,10 +134,14 @@ func TestSetDefaultType(t *testing.T) {
 			wantErrType: TypeInputBody,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			before := defaultErrType
 			SetDefaultType(tt.args.e)
 			err := New(tt.args.message)
+			// resetting to previous value to stop messing with the entire package
+			SetDefaultType(before)
 			if err.Type() != tt.wantErrType {
 				t.Errorf(
 					"New() = got type '%d', expected '%d",

@@ -3,6 +3,7 @@ package errors
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 	"testing"
 )
@@ -123,9 +124,50 @@ func TestAs(t *testing.T) {
 	}
 
 	out := target.Error()
-	want := "/errors/mirror_test.go:120: type *Error"
+	want := "/errors/mirror_test.go:121: type *Error"
 	if !strings.Contains(out, want) {
 		t.Errorf("Error() = %s, want %s", out, want)
 	}
+}
 
+func TestJoin(t *testing.T) {
+	joined := Join(
+		errors.New("[1] std"),
+		New("[2] custom"),
+		errors.New("[3] std"),
+		Validation("[4] validation"),
+	)
+	got := fmt.Sprint(joined)
+	if !strings.Contains(got, "[1] std") ||
+		!strings.Contains(got, "mirror_test.go:136: [2] custom") ||
+		!strings.Contains(got, "[3] std") ||
+		!strings.Contains(got, "mirror_test.go:138: [4] validation") {
+		t.Error(got)
+	}
+
+	msg, ok := Message(joined)
+	if ok {
+		t.Errorf(
+			"Expected: false, got: %v",
+			ok,
+		)
+	}
+	expectedMsg := `[2] custom
+[4] validation`
+	if msg != expectedMsg {
+		t.Error(msg)
+	}
+
+	expectedCode := http.StatusUnprocessableEntity
+	code, msg, ok := HTTPStatusCodeMessage(joined)
+	if ok {
+		t.Errorf("expected false, got: %v", ok)
+	}
+	if expectedMsg != msg ||
+		expectedCode != code {
+		t.Errorf(
+			"Expected msg: %s, expected code: %d, got msg: %s, got code: %d",
+			expectedMsg, expectedCode, msg, code,
+		)
+	}
 }

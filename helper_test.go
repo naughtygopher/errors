@@ -189,17 +189,17 @@ func TestHTTPStatusCodeMessage(t *testing.T) {
 			want2: true,
 		},
 	}
-	for _, tt := range tests {
+	for idx, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1, got2 := HTTPStatusCodeMessage(tt.args.err)
 			if got != tt.want {
-				t.Errorf("HTTPStatusCodeMessage() got = %v, want %v", got, tt.want)
+				t.Errorf("[%d] HTTPStatusCodeMessage() got = %v, want %v", idx, got, tt.want)
 			}
 			if got1 != tt.want1 {
-				t.Errorf("HTTPStatusCodeMessage() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("[%d] HTTPStatusCodeMessage() got1 = %v, want %v", idx, got1, tt.want1)
 			}
 			if got2 != tt.want2 {
-				t.Errorf("HTTPStatusCodeMessage() got2 = %v, want %v", got2, tt.want2)
+				t.Errorf("[%d] HTTPStatusCodeMessage() got2 = %v, want %v", idx, got2, tt.want2)
 			}
 		})
 	}

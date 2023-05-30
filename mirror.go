@@ -17,27 +17,20 @@ func As(err error, target interface{}) bool {
 	return errors.As(err, target)
 }
 
-// Join returns an error that combines all the given errors.
-// This is the exact implementation found in Go v1.20.
-// It will be removed when Go >= v1.20 becomes the LTS version, and would just call the
-// native Join after that.
 func Join(errs ...error) error {
-	n := 0
-	for _, err := range errs {
-		if err != nil {
-			n++
-		}
-	}
+	n := len(errs)
 	if n == 0 {
 		return nil
 	}
+
 	e := &joinError{
 		errs: make([]error, 0, n),
 	}
 	for _, err := range errs {
-		if err != nil {
-			e.errs = append(e.errs, err)
+		if err == nil {
+			continue
 		}
+		e.errs = append(e.errs, err)
 	}
 	return e
 }

@@ -292,23 +292,38 @@ func DownstreamDependencyTimedoutErrf(original error, format string, args ...int
 }
 
 // HTTPStatusCodeMessage returns the appropriate HTTP status code, message, boolean for the error
-// the boolean value is true if the error was of type *Error, false otherwise
+// the boolean value is true if the error was of type *Error, false otherwise.
 func HTTPStatusCodeMessage(err error) (int, string, bool) {
-	derr, _ := err.(*Error)
-	if derr != nil {
-		return derr.HTTPStatusCode(), derr.Message(), true
+	code, isErr := HTTPStatusCode(err)
+	msg, isErrMsg := Message(err)
+	if msg == "" {
+		msg = err.Error()
 	}
-
-	return http.StatusInternalServerError, err.Error(), false
+	return code, msg, isErr && isErrMsg
 }
 
 // HTTPStatusCode returns appropriate HTTP response status code based on type of the error. The boolean
 // is 'true' if the provided error is of type *Err
+// In case of joined errors, it'll return the status code of the last *Error
 func HTTPStatusCode(err error) (int, bool) {
 	derr, _ := err.(*Error)
 	if derr != nil {
 		return derr.HTTPStatusCode(), true
 	}
+
+	jerr, _ := err.(*joinError)
+	if jerr != nil {
+		elen := len(jerr.errs)
+		isErr := true
+		for i := elen - 1; i >= 0; i-- {
+			code, isE := HTTPStatusCode(jerr.errs[i])
+			isErr = isE && isErr
+			if isE {
+				return code, isErr
+			}
+		}
+	}
+
 	return http.StatusInternalServerError, false
 }
 
@@ -325,6 +340,22 @@ func Message(err error) (string, bool) {
 	if derr != nil {
 		return derr.Message(), true
 	}
+
+	jerr, _ := err.(*joinError)
+	if jerr != nil {
+		list := make([]string, 0, len(jerr.errs))
+		isErr := true
+		for i := range jerr.errs {
+			msg, ok := Message(jerr.errs[i])
+			isErr = isErr && ok
+			if msg == "" {
+				continue
+			}
+			list = append(list, msg)
+		}
+		return strings.Join(list, "\n"), isErr
+	}
+
 	return "", false
 }
 
@@ -338,12 +369,23 @@ func WriteHTTP(err error, w http.ResponseWriter) {
 }
 
 // Type returns the errType if it's an instance of *Error, -1 otherwise
+// In case of joined error, it'll return the type of the last *Error
 func Type(err error) errType {
-	e, ok := err.(*Error)
-	if !ok {
-		return errType(-1)
+	e, _ := err.(*Error)
+	if e != nil {
+		return e.Type()
 	}
-	return e.Type()
+	je, _ := err.(*joinError)
+	if je != nil {
+		for i := len(je.errs) - 1; i >= 0; i-- {
+			et := Type(je.errs[i])
+			if et.Int() != -1 {
+				return et
+			}
+		}
+	}
+
+	return errType(-1)
 }
 
 // Type returns the errType as integer if it's an instance of *Error, -1 otherwise
@@ -360,6 +402,15 @@ func HasType(err error, et errType) bool {
 	e, _ := err.(*Error)
 	if e == nil {
 		return HasType(errors.Unwrap(err), et)
+	}
+
+	je, _ := err.(*joinError)
+	if je != nil {
+		for i := 0; i < len(je.errs); i++ {
+			if HasType(je.errs[i], et) {
+				return true
+			}
+		}
 	}
 
 	if e.Type() == et {
