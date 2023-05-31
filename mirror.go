@@ -32,6 +32,12 @@ func Join(errs ...error) error {
 		}
 		e.errs = append(e.errs, err)
 	}
+
+	n = len(e.errs)
+	if n == 0 {
+		return nil
+	}
+
 	return e
 }
 
