@@ -1,9 +1,9 @@
 <p align="center"><img src="https://user-images.githubusercontent.com/1092882/87815217-d864a680-c882-11ea-9c94-24b67f7125fe.png" alt="errors gopher" width="256px"/></p>
 
-[![](https://github.com/bnkamalesh/errors/actions/workflows/go.yml/badge.svg?branch=master)](https://github.com/bnkamalesh/errors/actions)
-[![Go Reference](https://pkg.go.dev/badge/github.com/bnkamalesh/errors.svg)](https://pkg.go.dev/github.com/bnkamalesh/errors)
-[![Go Report Card](https://goreportcard.com/badge/github.com/bnkamalesh/errors)](https://goreportcard.com/report/github.com/bnkamalesh/errors)
-[![codecov](https://codecov.io/gh/bnkamalesh/errors/branch/master/graph/badge.svg)](https://codecov.io/gh/bnkamalesh/errors)
+[![](https://github.com/naughtygopher/errors/actions/workflows/go.yml/badge.svg?branch=master)](https://github.com/naughtygopher/errors/actions)
+[![Go Reference](https://pkg.go.dev/badge/github.com/naughtygopher/errors.svg)](https://pkg.go.dev/github.com/naughtygopher/errors)
+[![Go Report Card](https://goreportcard.com/badge/github.com/naughtygopher/errors)](https://goreportcard.com/report/github.com/naughtygopher/errors)
+[![codecov](https://codecov.io/gh/naughtygopher/errors/branch/master/graph/badge.svg)](https://codecov.io/gh/naughtygopher/errors)
 [![](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go#error-handling)
 
 # Errors v0.10.0
@@ -46,7 +46,7 @@ Go 1.13+
 Helper functions are available for all the error types. Each of them have 2 helper functions, one which accepts only a string,
 and the other which accepts an original error as well as a user friendly message.
 
-All the dedicated error type functions are documented [here](https://pkg.go.dev/github.com/bnkamalesh/errors?tab=doc#DownstreamDependencyTimedout).
+All the dedicated error type functions are documented [here](https://pkg.go.dev/github.com/naughtygopher/errors?tab=doc#DownstreamDependencyTimedout).
 Names are consistent with the error type, e.g. errors.Internal(string) and errors.InternalErr(error, string)
 
 ### User friendly messages
@@ -63,7 +63,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/bnkamalesh/errors"
+	"github.com/naughtygopher/errors"
 )
 
 func Bar() error {
@@ -99,10 +99,10 @@ Output
 ```
 err: bar is not happy
 
-err.Error(): /Users/k.balakumaran/go/src/github.com/bnkamalesh/errors/cmd/main.go:16: bar is not happy
+err.Error(): /Users/k.balakumaran/go/src/github.com/naughtygopher/errors/cmd/main.go:16: bar is not happy
 hello world!bar is not happy
 
-formatted +v: /Users/k.balakumaran/go/src/github.com/bnkamalesh/errors/cmd/main.go:16: bar is not happy
+formatted +v: /Users/k.balakumaran/go/src/github.com/naughtygopher/errors/cmd/main.go:16: bar is not happy
 hello world!bar is not happy
 
 formatted v: bar is not happy
@@ -136,9 +136,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/bnkamalesh/errors"
-	"github.com/bnkamalesh/webgo/v6"
-	"github.com/bnkamalesh/webgo/v6/middleware/accesslog"
+	"github.com/naughtygopher/errors"
+	"github.com/naughtygopher/webgo/v6"
+	"github.com/naughtygopher/webgo/v6/middleware/accesslog"
 )
 
 func bar() error {
@@ -202,7 +202,7 @@ func main() {
 }
 ```
 
-[webgo](https://github.com/bnkamalesh/webgo) was used to illustrate the usage of the function, `errors.HTTPStatusCodeMessage`. It returns the appropriate http status code, user friendly message stored within, and a boolean value. Boolean value is `true` if the returned error of type \*Error.
+[webgo](https://github.com/naughtygopher/webgo) was used to illustrate the usage of the function, `errors.HTTPStatusCodeMessage`. It returns the appropriate http status code, user friendly message stored within, and a boolean value. Boolean value is `true` if the returned error of type \*Error.
 Since we get the status code and message separately, when using any web framework, you can set values according to the respective framework's native functions. In case of Webgo, it wraps errors in a struct of its own. Otherwise, you could directly respond to the HTTP request by calling `errors.WriteHTTP(error,http.ResponseWriter)`.
 
 Once the app is running, you can check the response by opening `http://localhost:8080` on your browser. Or on terminal
@@ -229,7 +229,7 @@ go version go1.19.5 darwin/amd64
 $ go test -benchmem -bench .
 goos: darwin
 goarch: amd64
-pkg: github.com/bnkamalesh/errors
+pkg: github.com/naughtygopher/errors
 cpu: Intel(R) Core(TM) i7-1068NG7 CPU @ 2.30GHz
 Benchmark_Internal-8                            	 1526194	       748.8 ns/op	    1104 B/op	       2 allocs/op
 Benchmark_Internalf-8                           	 1281465	       944.0 ns/op	    1128 B/op	       3 allocs/op
@@ -241,7 +241,7 @@ Benchmark_InternalGetMessageWithNestedError-8   	 1362092	       886.3 ns/op	   
 Benchmark_HTTPStatusCodeMessage-8               	27494096	        41.38 ns/op	      16 B/op	       1 allocs/op
 BenchmarkHasType-8                              	100000000	        10.50 ns/op	       0 B/op	       0 allocs/op
 PASS
-ok  	github.com/bnkamalesh/errors	15.006s
+ok  	github.com/naughtygopher/errors	15.006s
 ```
 
 ## Contributing
