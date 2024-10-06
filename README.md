@@ -1,9 +1,9 @@
 <p align="center"><img src="https://user-images.githubusercontent.com/1092882/87815217-d864a680-c882-11ea-9c94-24b67f7125fe.png" alt="errors gopher" width="256px"/></p>
 
-[![](https://github.com/naughtygopher/errors/actions/workflows/go.yml/badge.svg?branch=main)](https://github.com/naughtygopher/errors/actions)
+[![](https://github.com/naughtygopher/errors/actions/workflows/go.yml/badge.svg?branch=master)](https://github.com/naughtygopher/errors/actions)
 [![Go Reference](https://pkg.go.dev/badge/github.com/naughtygopher/errors.svg)](https://pkg.go.dev/github.com/naughtygopher/errors)
 [![Go Report Card](https://goreportcard.com/badge/github.com/naughtygopher/errors)](https://goreportcard.com/report/github.com/naughtygopher/errors)
-[![Coverage Status](https://coveralls.io/repos/github/naughtygopher/errors/badge.svg?branch=main)](https://coveralls.io/github/naughtygopher/errors?branch=main)
+[![Coverage Status](https://coveralls.io/repos/github/naughtygopher/errors/badge.svg?branch=master)](https://coveralls.io/github/naughtygopher/errors?branch=master)
 [![](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go#error-handling)
 
 # Errors v1.0.0
