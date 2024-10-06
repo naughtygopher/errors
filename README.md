@@ -6,7 +6,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/naughtygopher/errors/badge.svg?branch=main)](https://coveralls.io/github/naughtygopher/errors?branch=main)
 [![](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go#error-handling)
 
-# Errors v0.10.0
+# Errors v1.0.0
 
 Errors package is a drop-in replacement of the built-in Go errors package. It lets you create errors of 11 different types,
 which should handle most of the use cases. Some of them are a bit too specific for web applications, but useful nonetheless.
