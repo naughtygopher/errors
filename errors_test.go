@@ -179,7 +179,7 @@ func TestStacktraceCustomFormat(t *testing.T) {
 	msgFormat := "message: %m#"
 	traceFormat := "function: %f|"
 	got := StacktraceCustomFormat(msgFormat, traceFormat, e)
-	want := "message: wrapped error#function: github.com/bnkamalesh/errors.TestStacktraceCustomFormat|function: testing.tRunner|message: original error#"
+	want := "message: wrapped error#function: github.com/naughtygopher/errors.TestStacktraceCustomFormat|function: testing.tRunner|message: original error#"
 	if got != want {
 		t.Errorf("StacktraceCustomFormat() = %v\nwant %v", got, want)
 	}
