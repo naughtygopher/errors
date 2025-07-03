@@ -7,7 +7,7 @@
 [![](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go#error-handling)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/creativecreature/sturdyc/blob/master/LICENSE)
 
-# Errors v1.0.0
+# Errors v1.3.1
 
 Errors package is a drop-in replacement of the built-in Go errors package. It lets you create errors of 11 different types,
 which should handle most of the use cases. Some of them are a bit too specific for web applications, but useful nonetheless.
