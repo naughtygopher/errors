@@ -43,6 +43,9 @@ Go 1.13+
 9. TypeMaximumAttempts - For attempting the same action more than an allowed threshold
 10. TypeSubscriptionExpired - For when a user's 'paid' account has expired
 11. TypeDownstreamDependencyTimedout - For when a request to a downstream dependent service times out
+12. TypeNotImplemented - For when the requested function cannot be fullfilled because of incapability
+13. TypeContextTimedout - For when the Go context has timed out
+14. TypeContextCancelled - For when the Go context has been cancelled
 
 Helper functions are available for all the error types. Each of them have 2 helper functions, one which accepts only a string,
 and the other which accepts an original error as well as a user friendly message.
