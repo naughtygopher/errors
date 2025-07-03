@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"net/http"
 	"runtime"
 	"strconv"
 	"strings"
@@ -42,6 +41,15 @@ const (
 	TypeSubscriptionExpired
 	// TypeDownstreamDependencyTimedout is error type for when a request to a downstream dependent service times out
 	TypeDownstreamDependencyTimedout
+	// TypeNotImplemented is error type for when the requested function cannot be fullfilled because of incapability
+	TypeNotImplemented
+	// TypeContextTimedout is error type for when the Go context has timed out
+	TypeContextTimedout
+	// TypeContextCancelled is error type for when the Go context has been cancelled
+	TypeContextCancelled
+)
+
+const (
 
 	// DefaultMessage is the default user friendly message
 	DefaultMessage = "unknown error occurred"
@@ -164,54 +172,11 @@ func (e *Error) Is(err error) bool {
 	return o == e
 }
 
-// HTTPStatusCode is a convenience method used to get the appropriate HTTP response status code for the respective error type
+// Deprecated: HTTPStatusCode is a convenience method used to get the appropriate
+// HTTP response status code for the respective error type.
+// deprecated to free the Error type from protocol specific features
 func (e *Error) HTTPStatusCode() int {
-	status := http.StatusInternalServerError
-	switch e.eType {
-	case TypeValidation:
-		{
-			status = http.StatusUnprocessableEntity
-		}
-	case TypeInputBody:
-		{
-			status = http.StatusBadRequest
-		}
-
-	case TypeDuplicate:
-		{
-			status = http.StatusConflict
-		}
-
-	case TypeUnauthenticated:
-		{
-			status = http.StatusUnauthorized
-		}
-	case TypeUnauthorized:
-		{
-			status = http.StatusForbidden
-		}
-
-	case TypeEmpty:
-		{
-			status = http.StatusGone
-		}
-
-	case TypeNotFound:
-		{
-			status = http.StatusNotFound
-
-		}
-	case TypeMaximumAttempts:
-		{
-			status = http.StatusTooManyRequests
-		}
-	case TypeSubscriptionExpired:
-		{
-			status = http.StatusPaymentRequired
-		}
-	}
-
-	return status
+	return httpStatusCode(e.eType)
 }
 
 // Type returns the error type as integer
@@ -339,14 +304,14 @@ func New(msg string) *Error {
 	return newerr(nil, msg, defaultErrType, 3)
 }
 
-func Newf(fromat string, args ...interface{}) *Error {
+func Newf(fromat string, args ...any) *Error {
 	return newerrf(nil, defaultErrType, 4, fromat, args...)
 }
 
 // Errorf is a convenience method to create a new instance of Error with formatted message
 // Important: %w directive is not supported, use fmt.Errorf if you're using the %w directive or
 // use Wrap/Wrapf to wrap an error.
-func Errorf(fromat string, args ...interface{}) *Error {
+func Errorf(fromat string, args ...any) *Error {
 	return newerrf(nil, defaultErrType, 4, fromat, args...)
 }
 

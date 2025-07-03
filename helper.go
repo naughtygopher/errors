@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -20,17 +21,26 @@ func newerr(e error, message string, etype errType, skip int) *Error {
 	}
 }
 
-func newerrf(e error, etype errType, skip int, format string, args ...interface{}) *Error {
+func newerrf(e error, etype errType, skip int, format string, args ...any) *Error {
 	message := fmt.Sprintf(format, args...)
 	return newerr(e, message, etype, skip)
 }
 
 func getErrType(err error) errType {
 	e, _ := err.(*Error)
-	if e == nil {
-		return TypeInternal
+	if e != nil {
+		return e.Type()
 	}
-	return e.Type()
+
+	if errors.Is(err, context.DeadlineExceeded) {
+		return TypeContextTimedout
+	}
+
+	if errors.Is(err, context.Canceled) {
+		return TypeContextCancelled
+	}
+
+	return TypeInternal
 }
 
 // Wrap is used to simply wrap an error with optional message; error type would be the
@@ -41,7 +51,7 @@ func Wrap(original error, msg ...string) *Error {
 	return newerr(original, message, getErrType(original), 3)
 }
 
-func Wrapf(original error, format string, args ...interface{}) *Error {
+func Wrapf(original error, format string, args ...any) *Error {
 	return newerrf(original, getErrType(original), 4, format, args...)
 }
 
@@ -56,7 +66,7 @@ func NewWithType(msg string, etype errType) *Error {
 }
 
 // NewWithTypef returns an error instance with custom error type. And formatted message
-func NewWithTypef(etype errType, format string, args ...interface{}) *Error {
+func NewWithTypef(etype errType, format string, args ...any) *Error {
 	return newerrf(nil, etype, 4, format, args...)
 }
 
@@ -66,7 +76,7 @@ func NewWithErrMsgType(original error, message string, etype errType) *Error {
 }
 
 // NewWithErrMsgTypef returns an error instance with custom error type and formatted message
-func NewWithErrMsgTypef(original error, etype errType, format string, args ...interface{}) *Error {
+func NewWithErrMsgTypef(original error, etype errType, format string, args ...any) *Error {
 	return newerrf(original, etype, 4, format, args...)
 }
 
@@ -76,7 +86,7 @@ func Internal(message string) *Error {
 }
 
 // Internalf helper method for creating internal errors with formatted message
-func Internalf(format string, args ...interface{}) *Error {
+func Internalf(format string, args ...any) *Error {
 	return newerrf(nil, TypeInternal, 4, format, args...)
 }
 
@@ -86,7 +96,7 @@ func Validation(message string) *Error {
 }
 
 // Validationf is a helper function to create a new error of type TypeValidation, with formatted message
-func Validationf(format string, args ...interface{}) *Error {
+func Validationf(format string, args ...any) *Error {
 	return newerrf(nil, TypeValidation, 4, format, args...)
 }
 
@@ -96,7 +106,7 @@ func InputBody(message string) *Error {
 }
 
 // InputBodyf is a helper function to create a new error of type TypeInputBody, with formatted message
-func InputBodyf(format string, args ...interface{}) *Error {
+func InputBodyf(format string, args ...any) *Error {
 	return newerrf(nil, TypeInputBody, 4, format, args...)
 }
 
@@ -106,7 +116,7 @@ func Duplicate(message string) *Error {
 }
 
 // Duplicatef is a helper function to create a new error of type TypeDuplicate, with formatted message
-func Duplicatef(format string, args ...interface{}) *Error {
+func Duplicatef(format string, args ...any) *Error {
 	return newerrf(nil, TypeDuplicate, 4, format, args...)
 }
 
@@ -116,7 +126,7 @@ func Unauthenticated(message string) *Error {
 }
 
 // Unauthenticatedf is a helper function to create a new error of type TypeUnauthenticated, with formatted message
-func Unauthenticatedf(format string, args ...interface{}) *Error {
+func Unauthenticatedf(format string, args ...any) *Error {
 	return newerrf(nil, TypeUnauthenticated, 4, format, args...)
 
 }
@@ -127,7 +137,7 @@ func Unauthorized(message string) *Error {
 }
 
 // Unauthorizedf is a helper function to create a new error of type TypeUnauthorized, with formatted message
-func Unauthorizedf(format string, args ...interface{}) *Error {
+func Unauthorizedf(format string, args ...any) *Error {
 	return newerrf(nil, TypeUnauthorized, 4, format, args...)
 }
 
@@ -137,7 +147,7 @@ func Empty(message string) *Error {
 }
 
 // Emptyf is a helper function to create a new error of type TypeEmpty, with formatted message
-func Emptyf(format string, args ...interface{}) *Error {
+func Emptyf(format string, args ...any) *Error {
 	return newerrf(nil, TypeEmpty, 4, format, args...)
 }
 
@@ -147,7 +157,7 @@ func NotFound(message string) *Error {
 }
 
 // NotFoundf is a helper function to create a new error of type TypeNotFound, with formatted message
-func NotFoundf(format string, args ...interface{}) *Error {
+func NotFoundf(format string, args ...any) *Error {
 	return newerrf(nil, TypeNotFound, 4, format, args...)
 }
 
@@ -157,7 +167,7 @@ func MaximumAttempts(message string) *Error {
 }
 
 // MaximumAttemptsf is a helper function to create a new error of type TypeMaximumAttempts, with formatted message
-func MaximumAttemptsf(format string, args ...interface{}) *Error {
+func MaximumAttemptsf(format string, args ...any) *Error {
 	return newerrf(nil, TypeMaximumAttempts, 4, format, args...)
 }
 
@@ -167,7 +177,7 @@ func SubscriptionExpired(message string) *Error {
 }
 
 // SubscriptionExpiredf is a helper function to create a new error of type TypeSubscriptionExpired, with formatted message
-func SubscriptionExpiredf(format string, args ...interface{}) *Error {
+func SubscriptionExpiredf(format string, args ...any) *Error {
 	return newerrf(nil, TypeSubscriptionExpired, 4, format, args...)
 }
 
@@ -177,8 +187,38 @@ func DownstreamDependencyTimedout(message string) *Error {
 }
 
 // DownstreamDependencyTimedoutf is a helper function to create a new error of type TypeDownstreamDependencyTimedout, with formatted message
-func DownstreamDependencyTimedoutf(format string, args ...interface{}) *Error {
+func DownstreamDependencyTimedoutf(format string, args ...any) *Error {
 	return newerrf(nil, TypeDownstreamDependencyTimedout, 4, format, args...)
+}
+
+// NotImplemented is a helper function to create a new error of type TypeNotImplemented
+func NotImplemented(message string) *Error {
+	return newerr(nil, message, TypeNotImplemented, 3)
+}
+
+// NotImplementedf is a helper function to create a new error of type TypeNotImplemented, with formatted message
+func NotImplementedf(format string, args ...any) *Error {
+	return newerrf(nil, TypeNotImplemented, 4, format, args...)
+}
+
+// ContextCancelled is a helper function to create a new error of type TypeContextCancelled
+func ContextCancelled(message string) *Error {
+	return newerr(nil, message, TypeContextCancelled, 3)
+}
+
+// ContextCancelledf is a helper function to create a new error of type TypeContextCancelled, with formatted message
+func ContextCancelledf(format string, args ...any) *Error {
+	return newerrf(nil, TypeContextCancelled, 4, format, args...)
+}
+
+// TypeContextTimedout is a helper function to create a new error of type TypeContextTimedout
+func ContextTimedout(message string) *Error {
+	return newerr(nil, message, TypeContextTimedout, 3)
+}
+
+// ContextTimedoutf is a helper function to create a new error of type TypeContextTimedout, with formatted message
+func ContextTimedoutf(format string, args ...any) *Error {
+	return newerrf(nil, TypeContextTimedout, 4, format, args...)
 }
 
 // InternalErr helper method for creation internal errors which also accepts an original error
@@ -187,7 +227,7 @@ func InternalErr(original error, message string) *Error {
 }
 
 // InternalErr helper method for creation internal errors which also accepts an original error, with formatted message
-func InternalErrf(original error, format string, args ...interface{}) *Error {
+func InternalErrf(original error, format string, args ...any) *Error {
 	return newerrf(original, TypeInternal, 4, format, args...)
 }
 
@@ -197,7 +237,7 @@ func ValidationErr(original error, message string) *Error {
 }
 
 // ValidationErr helper method for creation validation errors which also accepts an original error, with formatted message
-func ValidationErrf(original error, format string, args ...interface{}) *Error {
+func ValidationErrf(original error, format string, args ...any) *Error {
 	return newerrf(original, TypeValidation, 4, format, args...)
 }
 
@@ -207,7 +247,7 @@ func InputBodyErr(original error, message string) *Error {
 }
 
 // InputBodyErrf is a helper function to create a new error of type TypeInputBody which also accepts an original error, with formatted message
-func InputBodyErrf(original error, format string, args ...interface{}) *Error {
+func InputBodyErrf(original error, format string, args ...any) *Error {
 	return newerrf(original, TypeInputBody, 4, format, args...)
 }
 
@@ -217,7 +257,7 @@ func DuplicateErr(original error, message string) *Error {
 }
 
 // DuplicateErrf is a helper function to create a new error of type TypeDuplicate which also accepts an original error, with formatted message
-func DuplicateErrf(original error, format string, args ...interface{}) *Error {
+func DuplicateErrf(original error, format string, args ...any) *Error {
 	return newerrf(original, TypeDuplicate, 4, format, args...)
 }
 
@@ -227,7 +267,7 @@ func UnauthenticatedErr(original error, message string) *Error {
 }
 
 // UnauthenticatedErrf is a helper function to create a new error of type TypeUnauthenticated which also accepts an original error, with formatted message
-func UnauthenticatedErrf(original error, format string, args ...interface{}) *Error {
+func UnauthenticatedErrf(original error, format string, args ...any) *Error {
 	return newerrf(original, TypeUnauthenticated, 4, format, args...)
 }
 
@@ -237,7 +277,7 @@ func UnauthorizedErr(original error, message string) *Error {
 }
 
 // UnauthorizedErrf is a helper function to create a new error of type TypeUnauthorized which also accepts an original error, with formatted message
-func UnauthorizedErrf(original error, format string, args ...interface{}) *Error {
+func UnauthorizedErrf(original error, format string, args ...any) *Error {
 	return newerrf(original, TypeUnauthorized, 4, format, args...)
 }
 
@@ -247,7 +287,7 @@ func EmptyErr(original error, message string) *Error {
 }
 
 // EmptyErr is a helper function to create a new error of type TypeEmpty which also accepts an original error, with formatted message
-func EmptyErrf(original error, format string, args ...interface{}) *Error {
+func EmptyErrf(original error, format string, args ...any) *Error {
 	return newerrf(original, TypeEmpty, 4, format, args...)
 }
 
@@ -257,7 +297,7 @@ func NotFoundErr(original error, message string) *Error {
 }
 
 // NotFoundErrf is a helper function to create a new error of type TypeNotFound which also accepts an original error, with formatted message
-func NotFoundErrf(original error, format string, args ...interface{}) *Error {
+func NotFoundErrf(original error, format string, args ...any) *Error {
 	return newerrf(original, TypeNotFound, 4, format, args...)
 }
 
@@ -267,7 +307,7 @@ func MaximumAttemptsErr(original error, message string) *Error {
 }
 
 // MaximumAttemptsErr is a helper function to create a new error of type TypeMaximumAttempts which also accepts an original error, with formatted message
-func MaximumAttemptsErrf(original error, format string, args ...interface{}) *Error {
+func MaximumAttemptsErrf(original error, format string, args ...any) *Error {
 	return newerrf(original, TypeMaximumAttempts, 4, format, args...)
 }
 
@@ -277,7 +317,7 @@ func SubscriptionExpiredErr(original error, message string) *Error {
 }
 
 // SubscriptionExpiredErrf is a helper function to create a new error of type TypeSubscriptionExpired which also accepts an original error, with formatted message
-func SubscriptionExpiredErrf(original error, format string, args ...interface{}) *Error {
+func SubscriptionExpiredErrf(original error, format string, args ...any) *Error {
 	return newerrf(original, TypeSubscriptionExpired, 4, format, args...)
 }
 
@@ -287,44 +327,28 @@ func DownstreamDependencyTimedoutErr(original error, message string) *Error {
 }
 
 // DownstreamDependencyTimedoutErrf is a helper function to create a new error of type TypeDownstreamDependencyTimedout which also accepts an original error, with formatted message
-func DownstreamDependencyTimedoutErrf(original error, format string, args ...interface{}) *Error {
+func DownstreamDependencyTimedoutErrf(original error, format string, args ...any) *Error {
 	return newerrf(original, TypeDownstreamDependencyTimedout, 4, format, args...)
 }
 
-// HTTPStatusCodeMessage returns the appropriate HTTP status code, message, boolean for the error
-// the boolean value is true if the error was of type *Error, false otherwise.
-func HTTPStatusCodeMessage(err error) (int, string, bool) {
-	code, isErr := HTTPStatusCode(err)
-	msg, isErrMsg := Message(err)
-	if msg == "" {
-		msg = err.Error()
-	}
-	return code, msg, isErr && isErrMsg
+// NotImplementedErr is a helper function to create a new error of type TypeNotImplemented which also accepts an original error
+func NotImplementedErr(original error, message string) *Error {
+	return newerr(original, message, TypeNotImplemented, 3)
 }
 
-// HTTPStatusCode returns appropriate HTTP response status code based on type of the error. The boolean
-// is 'true' if the provided error is of type *Err
-// In case of joined errors, it'll return the status code of the last *Error
-func HTTPStatusCode(err error) (int, bool) {
-	derr, _ := err.(*Error)
-	if derr != nil {
-		return derr.HTTPStatusCode(), true
-	}
+// NotImplementedErrf is a helper function to create a new error of type TypeNotImplemented which also accepts an original error, with formatted message
+func NotImplementedErrf(original error, format string, args ...any) *Error {
+	return newerrf(original, TypeNotImplemented, 4, format, args...)
+}
 
-	jerr, _ := err.(*joinError)
-	if jerr != nil {
-		elen := len(jerr.errs)
-		isErr := true
-		for i := elen - 1; i >= 0; i-- {
-			code, isE := HTTPStatusCode(jerr.errs[i])
-			isErr = isE && isErr
-			if isE {
-				return code, isErr
-			}
-		}
-	}
+// ContextCancelledErr is a helper function to create a new error of type TypeContextCancelled which also accepts an original error
+func ContextCancelledErr(original error, message string) *Error {
+	return newerr(original, message, TypeContextCancelled, 3)
+}
 
-	return http.StatusInternalServerError, false
+// ContextCancelledErrf is a helper function to create a new error of type TypeContextCancelled which also accepts an original error, with formatted message
+func ContextCancelledErrf(original error, format string, args ...any) *Error {
+	return newerrf(original, TypeContextCancelled, 4, format, args...)
 }
 
 // ErrWithoutTrace is a duplicate of Message, but with clearer name. The boolean is 'true' if the
