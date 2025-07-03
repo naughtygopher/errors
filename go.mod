@@ -1,8 +1,6 @@
 module github.com/naughtygopher/errors
 
-go 1.23.0
-
-toolchain go1.24.4
+go 1.18
 
 require google.golang.org/grpc v1.73.0
 
