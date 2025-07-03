@@ -7,7 +7,7 @@
 [![](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go#error-handling)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/creativecreature/sturdyc/blob/master/LICENSE)
 
-# Errors v1.0.0
+# Errors v1.3.1
 
 Errors package is a drop-in replacement of the built-in Go errors package. It lets you create errors of 11 different types,
 which should handle most of the use cases. Some of them are a bit too specific for web applications, but useful nonetheless.
@@ -219,30 +219,30 @@ And the `fmt.Println(err.Error())` generated output on stdout would be:
 /Users/username/go/src/errorscheck/main.go:28 /Users/username/go/src/errorscheck/main.go:20 sinking bar
 ```
 
-## Benchmark [2022-01-12]
+## Benchmark [2025-07-03]
 
-MacBook Pro (13-inch, 2020, Four Thunderbolt 3 ports), 32 GB 3733 MHz LPDDR4X
+Macbook Air 13-inch, M3, 2024, Memory: 24 GB
 
 ```bash
 $ go version
-go version go1.19.5 darwin/amd64
+go version go1.24.4 darwin/arm64
 
 $ go test -benchmem -bench .
 goos: darwin
-goarch: amd64
+goarch: arm64
 pkg: github.com/naughtygopher/errors
-cpu: Intel(R) Core(TM) i7-1068NG7 CPU @ 2.30GHz
-Benchmark_Internal-8                            	 1526194	       748.8 ns/op	    1104 B/op	       2 allocs/op
-Benchmark_Internalf-8                           	 1281465	       944.0 ns/op	    1128 B/op	       3 allocs/op
-Benchmark_InternalErr-8                         	 1494351	       806.7 ns/op	    1104 B/op	       2 allocs/op
-Benchmark_InternalGetError-8                    	  981162	      1189 ns/op	    1528 B/op	       6 allocs/op
-Benchmark_InternalGetErrorWithNestedError-8     	  896322	      1267 ns/op	    1544 B/op	       6 allocs/op
-Benchmark_InternalGetMessage-8                  	 1492812	       804.2 ns/op	    1104 B/op	       2 allocs/op
-Benchmark_InternalGetMessageWithNestedError-8   	 1362092	       886.3 ns/op	    1128 B/op	       3 allocs/op
-Benchmark_HTTPStatusCodeMessage-8               	27494096	        41.38 ns/op	      16 B/op	       1 allocs/op
-BenchmarkHasType-8                              	100000000	        10.50 ns/op	       0 B/op	       0 allocs/op
+cpu: Apple M3
+Benchmark_Internal-8                            	 3650916	       321.7 ns/op	    1104 B/op	       2 allocs/op
+Benchmark_Internalf-8                           	 3155463	       378.9 ns/op	    1128 B/op	       3 allocs/op
+Benchmark_InternalErr-8                         	 3866085	       312.2 ns/op	    1104 B/op	       2 allocs/op
+Benchmark_InternalGetError-8                    	 1983544	       608.0 ns/op	    1576 B/op	       6 allocs/op
+Benchmark_InternalGetErrorWithNestedError-8     	 2419369	       497.8 ns/op	    1592 B/op	       6 allocs/op
+Benchmark_InternalGetMessage-8                  	 3815074	       316.1 ns/op	    1104 B/op	       2 allocs/op
+Benchmark_InternalGetMessageWithNestedError-8   	 3470449	       342.2 ns/op	    1128 B/op	       3 allocs/op
+Benchmark_HTTPStatusCodeMessage-8               	40540940	        29.12 ns/op	      16 B/op	       1 allocs/op
+BenchmarkHasType-8                              	100000000	        11.44 ns/op	       0 B/op	       0 allocs/op
 PASS
-ok  	github.com/naughtygopher/errors	15.006s
+ok  	github.com/naughtygopher/errors	13.805s
 ```
 
 ## Contributing
