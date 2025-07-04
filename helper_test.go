@@ -1,10 +1,14 @@
 package errors
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"reflect"
 	"testing"
+
+	"google.golang.org/grpc/codes"
 )
 
 func TestWrap(t *testing.T) {
@@ -244,5 +248,31 @@ func TestHasType(t *testing.T) {
 				t.Errorf("HasType() = %v, want %v %s", got, tt.want, tt.args.err.Error())
 			}
 		})
+	}
+}
+
+func TestContextErrors(t *testing.T) {
+	err := context.Canceled
+	werr := Wrap(err, "wrapped")
+	if !HasType(werr, TypeContextCancelled) {
+		t.Error("expected TypeContextCancelled")
+	}
+
+	code, _ := HTTPStatusCode(werr)
+	if code != http.StatusRequestTimeout {
+		t.Errorf("expected 408, got: %d", code)
+	}
+
+	gcode, _ := GRPCStatusCode(werr)
+	if gcode != codes.Canceled {
+		t.Errorf("expected %d/%s, got: %d", codes.Canceled, codes.Canceled, code)
+	}
+
+	err = context.DeadlineExceeded
+	werr = Wrap(err, "wrapped")
+
+	gcode, _ = GRPCStatusCode(werr)
+	if gcode != codes.DeadlineExceeded {
+		t.Errorf("expected %d/%s, got: %d", codes.DeadlineExceeded, codes.DeadlineExceeded, code)
 	}
 }
