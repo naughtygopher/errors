@@ -2,8 +2,8 @@
 
 [![](https://github.com/naughtygopher/errors/actions/workflows/go.yml/badge.svg?branch=master)](https://github.com/naughtygopher/errors/actions)
 [![Go Reference](https://pkg.go.dev/badge/github.com/naughtygopher/errors.svg)](https://pkg.go.dev/github.com/naughtygopher/errors)
-[![Go Report Card](https://goreportcard.com/badge/github.com/naughtygopher/errors)](https://goreportcard.com/report/github.com/naughtygopher/errors)
-[![Coverage Status](https://coveralls.io/repos/github/naughtygopher/errors/badge.svg?branch=master)](https://coveralls.io/github/naughtygopher/errors?branch=master)
+[![Go Report Card](https://goreportcard.com/badge/github.com/naughtygopher/errors?cache_updated=2025-07-04)](https://goreportcard.com/report/github.com/naughtygopher/errors)
+[![Coverage Status](https://coveralls.io/repos/github/naughtygopher/errors/badge.svg?branch=master&cache_updated=2025-07-04)](https://coveralls.io/github/naughtygopher/errors?branch=master)
 [![](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go#error-handling)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/creativecreature/sturdyc/blob/master/LICENSE)
 
