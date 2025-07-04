@@ -9,26 +9,23 @@
 
 # Errors v1.3.1
 
-Errors package is a drop-in replacement of the built-in Go errors package. It lets you create errors of 11 different types,
+Errors package is a drop-in replacement of the built-in Go errors package. It lets you create errors of 14 different types,
 which should handle most of the use cases. Some of them are a bit too specific for web applications, but useful nonetheless.
 
 Features of this package:
 
-1. Multiple (11) error types
+1. Multiple (14) error types
 2. Easy handling of User friendly message(s)
 3. Stacktrace - formatted, unfromatted, custom format (refer tests in errors_test.go)
 4. Retrieve the Program Counters for the stacktrace
 5. Retrieve runtime.Frames using `errors.RuntimeFrames(err error)` for the stacktrace
 6. HTTP status code and user friendly message (wrapped messages are concatenated) for all error types
-7. Helper functions to generate each error type
-8. Helper function to get error Type, error type as int, check if error type is wrapped anywhere in chain
-9. `fmt.Formatter` support
+7. GRPC status code and user friendly message (wrapped messages are concatenated) for all error types
+8. Helper functions to generate each error type
+9. Helper function to get error Type, error type as int, check if error type is wrapped anywhere in chain
+10. . `fmt.Formatter` support
 
 In case of nested errors, the messages & errors are also looped through the full chain of errors.
-
-### Prerequisites
-
-Go 1.13+
 
 ### Available error types
 
@@ -47,8 +44,8 @@ Go 1.13+
 13. TypeContextTimedout - For when the Go context has timed out
 14. TypeContextCancelled - For when the Go context has been cancelled
 
-Helper functions are available for all the error types. Each of them have 2 helper functions, one which accepts only a string,
-and the other which accepts an original error as well as a user friendly message.
+Helper functions are available for all the error types. Each of them have 3 helper functions, one which accepts only a string,
+another which accepts an original error as well as a user friendly message, and one which accepts format string along with arguments.
 
 All the dedicated error type functions are documented [here](https://pkg.go.dev/github.com/naughtygopher/errors?tab=doc#DownstreamDependencyTimedout).
 Names are consistent with the error type, e.g. errors.Internal(string) and errors.InternalErr(error, string)
@@ -56,9 +53,9 @@ Names are consistent with the error type, e.g. errors.Internal(string) and error
 ### User friendly messages
 
 More often than not when writing APIs, we'd want to respond with an easier to undersand user friendly message.
-Instead of returning the raw error and log the raw error.
+Instead of returning the raw error, just log the raw error.
 
-There are helper functions for all the error types. When in need of setting a friendly message, there
+There are helper functions for all the error types. When in need of setting a friendly message for an existing error, there
 are helper functions with the _suffix_ **'Err'**. All such helper functions accept the original error and a string.
 
 ```golang
@@ -118,19 +115,21 @@ formatted s: bar is not happy
 msg: bar is not happy
 ```
 
-[Playground link](https://go.dev/play/p/-WzDH46f_U5)
+[Playground link](https://go.dev/play/p/OiLegJ9Xxc9)
 
 ### File & line number prefixed to errors
 
-A common annoyance with Go errors which most people are aware of is, figuring out the origin of the error, especially when there are nested function calls. Ever since error annotation was introduced in Go, a lot of people have tried using it to trace out an errors origin by giving function names, contextual message etc in it. e.g. `fmt.Errorf("database query returned error %w", err)`. However this errors package, whenever you call the Go error interface's `Error() string` function, prints the error prefixed by the filepath and line number. It'd look like `../Users/JohnDoe/apps/main.go:50 hello world` where 'hello world' is the error message.
+A common annoyance with Go errors which most people are aware of is, figuring out the origin of the error, especially when there are nested function calls.
+Annotations help a lot by being able to provide contextual message to errors. e.g. `fmt.Errorf("database query returned error %w", err)`.
+However in this package, the `Error() string` function (Go error interface method), prints the error prefixed by the filepath and line number. It'd look like `../Users/JohnDoe/apps/main.go:50 hello world` where 'hello world' is the error message.
 
-### HTTP status code & message
+### HTTP/GRPC status code & message
 
-The function `errors.HTTPStatusCodeMessage(error) (int, string, bool)` returns the HTTP status code, message, and a boolean value. The boolean is true, if the error is of type \*Error from this package. If error is nested, it unwraps and returns a single concatenated message. Sample described in the 'How to use?' section
+The functions `errors.HTTPStatusCodeMessage(error) (int, string, bool), errors.GRPCStatusCodeMessage(error) (int, string, bool)` returns the HTTP/GRPC status code, message, and a boolean value. The boolean is true, if the error is of type \*Error from this package. If error is nested, it unwraps and returns a single concatenated message. Sample described in the 'How to use?' section.
 
 ## How to use?
 
-A sample was already shown in the user friendly message section, following one would show a few more scenarios.
+Other than the functions explained earlier in the _**User friendly messages**_ section, more examples are provided below.
 
 ```golang
 package main
